@@ -105,3 +105,37 @@ Stage Summary:
 - Isometric orthographic map view, 3 flowing rivers, dense cartoon forest,
   cel-shaded terrain — all matching the Tropico 6 natural-environment brief
 - Repo updated at https://github.com/CMDX5/tropico-island-landscape
+
+---
+Task ID: 8
+Agent: main
+Task: Add cinematic post-processing, terrain splat-mapping, premium ocean (1+2+3)
+
+Work Log:
+- Installed @react-three/postprocessing@3.0.4 + postprocessing@6.39.1
+- Created terrainTextures.ts: procedural DataTextures (sand/grass/rock) via fbm,
+  RepeatWrapping, 128x128 RGBA
+- Rewrote IslandTerrain.tsx: MeshToonMaterial + onBeforeCompile splat-mapping
+  shader — blends 3 textures by world height + slope (vWorldNormal.y), keeps
+  cel-shading gradient map, adds per-fragment fine grain
+- Rewrote Ocean.tsx: foam attribute baked from islandHeight (peaks at shoreline),
+  sun glitter via time-varying hash in fragment shader, sharper specular
+  (roughness 0.08, metalness 0.35), shaderRef updated each frame for uTime
+- Created PostFX.tsx: EffectComposer with enableNormalPass + SSAO + DoF
+  (tilt-shift) + Bloom (mipmapBlur) + Vignette + SMAA
+- Wired PostFX into IslandScene; canvas antialias off, dpr [1,1.5]
+- Fixed SSAO "enable NormalPass" error by adding enableNormalPass prop
+- Cleared stale Turbopack error overlay (cached 'River' import) via full
+  browser close+reopen
+- Verified with VLM: bloom glow, vignette, DoF blur, coastal foam, sun glitter,
+  textured terrain (sand grain/grass/rock) all confirmed; no error overlay
+- Verified mobile (390x844): clean, properly framed
+- Updated README features table + project structure; refreshed preview
+- Removed accidental tool-results/ from commit, added to .gitignore
+- Lint clean; committed (996c462) and pushed to GitHub
+
+Stage Summary:
+- Cinematic post-FX stack (Bloom/SSAO/DoF/Vignette/SMAA) live
+- Terrain now has GPU splat-mapped procedural textures (not flat color)
+- Ocean has coastal foam + sun glitter
+- Render verified as "polished game render" by VLM
