@@ -96,28 +96,38 @@ function placeVillage(
     const x = center[0] + Math.cos(ang) * r
     const z = center[1] + Math.sin(ang) * r
     const h = islandHeight(x, z)
-    if (h < 0.5 || h > 2.6) continue
+    // sit right on the beach sand, clearly visible from above
+    if (h < 0.3 || h > 1.8) continue
     const hx = islandHeight(x + 0.8, z)
     const hz = islandHeight(x, z + 0.8)
     const slope = Math.abs(hx - h) + Math.abs(hz - h)
     if (slope > 0.9) continue
     result.push({
       position: [x, h, z],
-      scale: 0.9 + rand() * 0.4,
+      scale: 1.8 + rand() * 0.7, // bigger houses
       rotation: rand() * Math.PI * 2,
     })
   }
   return result
 }
 
+/** Village centers (shared with Vegetation so trees are cleared around houses).
+ *  All placed on the camera-facing side (+x / +z) so houses stay visible. */
+export const VILLAGE_CENTERS: Array<[number, number]> = [
+  [32, -20],
+  [36, 28],
+  [10, 34],
+]
+
 /**
- * A couple of small Caribbean villages dotted along the beaches.
+ * Three small Caribbean villages dotted along the beaches.
  */
 export function Buildings() {
   const villages = useMemo(
     () => [
-      placeVillage([30, -18], 7, 142),
-      placeVillage([-26, 22], 5, 311),
+      placeVillage(VILLAGE_CENTERS[0], 7, 142),
+      placeVillage(VILLAGE_CENTERS[1], 6, 311),
+      placeVillage(VILLAGE_CENTERS[2], 5, 489),
     ],
     [],
   )

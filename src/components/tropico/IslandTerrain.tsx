@@ -16,7 +16,7 @@ import { makeSandTexture, makeGrassTexture, makeRockTexture } from './terrainTex
 export function IslandTerrain() {
   // 3-step cel-shading gradient map for a cartoon painted look
   const gradientMap = useMemo(() => {
-    const data = new Uint8Array([110, 110, 110, 255, 175, 175, 175, 255, 255, 255, 255])
+    const data = new Uint8Array([185, 185, 185, 255, 225, 225, 225, 255, 255, 255, 255])
     const tex = new THREE.DataTexture(data, 3, 1, THREE.RGBAFormat)
     tex.needsUpdate = true
     tex.minFilter = THREE.NearestFilter
@@ -113,13 +113,16 @@ export function IslandTerrain() {
             float h = vWorldPos.y;
             float slope = vWorldNormal.y; // 1 flat, 0 vertical
             float sandW = smoothstep(1.8, 0.2, h);
-            float rockW = smoothstep(9.0, 13.5, h);
+            float rockW = smoothstep(7.5, 11.0, h);
             float steep = smoothstep(0.78, 0.5, slope);
             rockW = max(rockW, steep);
             sandW *= (1.0 - steep);
             float grassW = clamp(1.0 - sandW - rockW, 0.0, 1.0) * (1.0 - steep);
             vec3 splat = sandC * sandW + grassC * grassW + rockC * rockW;
-            diffuseColor.rgb = mix(diffuseColor.rgb, splat, 0.5);
+            // real snow cap on the highest peaks
+            float snowW = smoothstep(8.5, 12.0, h) * (1.0 - steep * 0.6);
+            splat = mix(splat, vec3(1.0), snowW);
+            diffuseColor.rgb = mix(diffuseColor.rgb, splat, 0.55);
             float grain = hash2(vWorldPos.xz * 9.0) * 0.06 - 0.03;
             diffuseColor.rgb += grain;
           }`,

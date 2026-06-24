@@ -34,11 +34,11 @@ export function IslandScene() {
       <OrthographicCamera makeDefault position={[85, 110, 85]} zoom={9} near={-500} far={1500} />
 
       {/* lighting */}
-      <hemisphereLight args={['#dff4ff', '#3d6b3a', 0.8]} />
-      <ambientLight intensity={0.3} />
+      <hemisphereLight args={['#fff4e0', '#4a5a3a', 1.0]} />
+      <ambientLight intensity={0.55} />
       <directionalLight
         position={SUN_POSITION}
-        intensity={2.2}
+        intensity={2.6}
         color="#fff3d6"
         castShadow
         shadow-mapSize={[2048, 2048]}

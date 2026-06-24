@@ -66,14 +66,14 @@ export function islandHeight(x: number, z: number): number {
 /*  Terrain coloring (Tropico-style bright tropical palette)                  */
 /* -------------------------------------------------------------------------- */
 
-// Saturated cartoon palette (Tropico 6 vibe)
+// Saturated cartoon palette (Tropico 6 vibe) — warm bright rocks
 const C_WET_SAND = new THREE.Color('#c6a868')
 const C_SAND = new THREE.Color('#f5dc94')
 const C_GRASS = new THREE.Color('#5ec638')
 const C_GRASS_DARK = new THREE.Color('#3a9a26')
 const C_FOREST = new THREE.Color('#1f7a1a')
-const C_ROCK = new THREE.Color('#9c8c72')
-const C_ROCK_DARK = new THREE.Color('#6a5c46')
+const C_ROCK = new THREE.Color('#c09877')
+const C_ROCK_DARK = new THREE.Color('#9a7654')
 const C_SNOW = new THREE.Color('#ffffff')
 
 const _tmp = new THREE.Color()
@@ -89,12 +89,12 @@ export function islandColor(height: number, out: THREE.Color = _tmp): THREE.Colo
     out.copy(C_GRASS).lerp(C_GRASS_DARK, (height - 1.8) / 2.7)
   } else if (height < 7.5) {
     out.copy(C_GRASS_DARK).lerp(C_FOREST, (height - 4.5) / 3)
+  } else if (height < 9.5) {
+    out.copy(C_FOREST).lerp(C_ROCK, (height - 7.5) / 2)
   } else if (height < 10.5) {
-    out.copy(C_FOREST).lerp(C_ROCK, (height - 7.5) / 3)
-  } else if (height < 13.5) {
-    out.copy(C_ROCK).lerp(C_ROCK_DARK, (height - 10.5) / 3)
+    out.copy(C_ROCK).lerp(C_ROCK_DARK, (height - 9.5) / 1)
   } else {
-    out.copy(C_ROCK_DARK).lerp(C_SNOW, Math.min(1, (height - 13.5) / 3))
+    out.copy(C_ROCK_DARK).lerp(C_SNOW, Math.min(1, (height - 10.5) / 2))
   }
   return out
 }

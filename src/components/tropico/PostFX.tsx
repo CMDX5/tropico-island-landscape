@@ -1,37 +1,36 @@
 'use client'
 
 import * as THREE from 'three'
-import { EffectComposer, Bloom, SSAO, DepthOfField, Vignette, SMAA } from '@react-three/postprocessing'
+import { EffectComposer, Bloom, SSAO, Vignette, SMAA } from '@react-three/postprocessing'
 import { BlendFunction, KernelSize } from 'postprocessing'
 
 /**
- * Cinematic post-processing stack tuned for the isometric island:
- *  - SSAO   : ambient occlusion in tree/rock crevices and cliff folds
- *  - DoF    : gentle tilt-shift blur at the frame edges (miniature vibe)
+ * Post-processing stack tuned for the isometric island:
+ *  - SSAO   : gentle ambient occlusion in tree/rock crevices
  *  - Bloom  : soft glow on foam, snow and sun glitter
  *  - Vignette : subtle edge darkening for focus
  *  - SMAA   : antialiasing (MSAA is off with the composer)
+ * (DoF removed — it was blurring the central mountain and muting snow caps)
  */
 export function PostFX() {
   return (
     <EffectComposer multisampling={0} enableNormalPass>
       <SSAO
         blendFunction={BlendFunction.MULTIPLY}
-        samples={21}
-        radius={0.03}
-        intensity={18}
+        samples={16}
+        radius={0.02}
+        intensity={6}
         luminanceInfluence={0.5}
-        color={new THREE.Color('#243a24')}
+        color={new THREE.Color('#3a4a3a')}
       />
-      <DepthOfField focusDistance={0.32} focalLength={0.025} bokehScale={2.5} />
       <Bloom
-        luminanceThreshold={0.6}
+        luminanceThreshold={0.7}
         luminanceSmoothing={0.25}
-        intensity={0.7}
+        intensity={0.55}
         mipmapBlur
         kernelSize={KernelSize.LARGE}
       />
-      <Vignette offset={0.25} darkness={0.55} />
+      <Vignette offset={0.3} darkness={0.35} />
       <SMAA />
     </EffectComposer>
   )

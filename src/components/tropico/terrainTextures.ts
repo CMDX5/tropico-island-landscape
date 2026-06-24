@@ -48,12 +48,12 @@ export function makeGrassTexture(size = 128): THREE.DataTexture {
   })
 }
 
-/** Grey-brown rock with low-frequency cracks. */
+/** Warm tan-brown rock with low-frequency cracks. */
 export function makeRockTexture(size = 128): THREE.DataTexture {
   return makeNoiseTexture(size, (u, v) => {
     const n = fbm(u * 6, v * 6, 5)
     const crack = 1 - Math.abs(fbm(u * 15, v * 15, 3) * 2 - 1)
-    const k = 0.72 + n * 0.22 - crack * 0.32
-    return [0.55 * k, 0.47 * k, 0.39 * k]
+    const k = 0.8 + n * 0.2 - crack * 0.22
+    return [0.78 * k, 0.6 * k, 0.42 * k]
   })
 }

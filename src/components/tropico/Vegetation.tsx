@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { scatter, type Placement } from './terrain'
 import { PalmTree } from './PalmTree'
 import { BroadleafTree } from './BroadleafTree'
+import { VILLAGE_CENTERS } from './Buildings'
 
 /* -------------------------------------------------------------------------- */
 /*  Rocks                                                                      */
@@ -82,19 +83,21 @@ function GrassTuft({ p }: { p: Placement }) {
 /* -------------------------------------------------------------------------- */
 
 export function Vegetation({ palmCount = 120 }: { palmCount?: number }) {
+  // keep trees away from the beach villages so houses stay visible
+  const avoid = useMemo(() => VILLAGE_CENTERS.map(([x, z]) => ({ x, z, r: 12 })), [])
   // palm trees on grassy lowlands (denser)
   const palms = useMemo(
-    () => scatter(palmCount, { minH: 0.5, maxH: 6.5, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35 }),
+    () => scatter(palmCount, { minH: 0.5, maxH: 6.5, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, avoid }),
     [palmCount],
   )
   // broadleaf tropical trees fill the forest belt (dense canopy)
   const broadleaf = useMemo(
-    () => scatter(110, { minH: 2.5, maxH: 9, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5 }),
+    () => scatter(110, { minH: 2.5, maxH: 9, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, avoid }),
     [],
   )
   // bushes a bit higher up
   const bushes = useMemo(
-    () => scatter(80, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4 }),
+    () => scatter(80, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, avoid }),
     [],
   )
   // rocks scattered on beaches and slopes
