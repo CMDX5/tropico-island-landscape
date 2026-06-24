@@ -79,7 +79,8 @@ function mountainMask(x: number, z: number): number {
  */
 function jungleMask(x: number, z: number): number {
   const n = fbm(x * 0.018 + 500, z * 0.018 + 500, 3)
-  return Math.max(0, smoothstep(0.42, 0.56, n))
+  // wide threshold so jungle covers ~60% of the island (very wet climate)
+  return Math.max(0, smoothstep(0.35, 0.5, n))
 }
 
 /**
@@ -129,25 +130,27 @@ export function biomeAt(x: number, z: number, height: number): Biome {
 
 /**
  * Terrain height at a given world (x, z) coordinate.
- * Mostly flat with a CENTRAL VOLCANO (tall cone), localised mountains,
- * plateaus, and gentle hills.
+ * Mostly flat with a CENTRAL VOLCANO (tall cone + snow cap), localised
+ * mountains, plateaus, and gentle hills.
+ *
+ * IMPORTANT: anywhere inside the island disc (falloff > 0) the terrain
+ * is clamped to stay ABOVE sea level so no blue water holes appear in
+ * the interior. Only the surrounding ocean is water.
  */
 export function islandHeight(x: number, z: number): number {
   const d = Math.sqrt(x * x + z * z)
   const falloff = Math.max(0, 1 - Math.pow(d / ISLAND_RADIUS, 2.3))
   const base = fbm(x * 0.045, z * 0.045, 5)
-  // gentle base relief (mostly flat, fertile lowlands)
-  let h = falloff * 2.5 + (base - 0.5) * falloff * 2.5 - 1.6
-  // CENTRAL VOLCANO: tall cone with crater rim
+  // base relief: raised so interior stays above sea level (no blue holes)
+  let h = falloff * 3.0 + (base - 0.5) * falloff * 2.0 + 0.2
+  // CENTRAL VOLCANO: taller cone with crater rim (height ~52)
   const vMask = volcanoMask(x, z)
   if (vMask > 0) {
     const volcanoD = Math.sqrt(x * x + z * z)
     const volcanoR = ISLAND_RADIUS * 0.22
-    // cone shape: height decreases with distance from center
     const cone = Math.max(0, 1 - volcanoD / volcanoR)
-    // crater: dip at the very center
-    const crater = volcanoD < volcanoR * 0.25 ? Math.cos(volcanoD / (volcanoR * 0.25) * Math.PI * 0.5) * 4 : 0
-    h += cone * cone * 32 - crater
+    const crater = volcanoD < volcanoR * 0.22 ? Math.cos(volcanoD / (volcanoR * 0.22) * Math.PI * 0.5) * 5 : 0
+    h += cone * cone * 52 - crater
   }
   // localised mountains (only in mountain regions)
   const mMask = mountainMask(x, z)
@@ -164,6 +167,12 @@ export function islandHeight(x: number, z: number): number {
   const hMask = hillMask(x, z)
   if (hMask > 0) {
     h += (base - 0.5) * hMask * falloff * 4
+  }
+  // CLAMP: inside the island disc, terrain must stay above sea level
+  // (sea level ~0.0; ocean surface at y=-0.25). Raise to +0.8 minimum
+  // so beaches/land read as solid, never as water holes.
+  if (falloff > 0.02 && h < 0.8) {
+    h = 0.8
   }
   return h
 }
@@ -224,12 +233,15 @@ export function islandColorAt(x: number, z: number, height: number, out: THREE.C
     case 'volcano': {
       const vd = Math.sqrt(x * x + z * z)
       const vr = ISLAND_RADIUS * 0.22
-      if (vd < vr * 0.3) {
+      if (vd < vr * 0.22 && height > 30) {
         // crater: lava glow
         out.copy(C_LAVA)
+      } else if (height > 30) {
+        // snow cap on the volcano summit
+        out.copy(C_VOLCANO).lerp(C_SNOW, Math.min(1, (height - 30) / 15))
       } else {
         // volcanic slopes: dark rock, lighter toward base
-        const t = Math.min(1, (vd - vr * 0.3) / (vr * 0.7))
+        const t = Math.min(1, (vd - vr * 0.22) / (vr * 0.78))
         out.copy(C_VOLCANO).lerp(C_ROCK_DARK, t * 0.7)
       }
       break

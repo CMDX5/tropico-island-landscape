@@ -93,7 +93,7 @@ export function IslandScene() {
         <IslandTerrain />
         <Rivers />
         <Ocean />
-        <Vegetation palmCount={220} />
+        <Vegetation palmCount={280} />
         <IslandClouds />
       </Suspense>
 

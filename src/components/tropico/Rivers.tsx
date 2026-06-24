@@ -84,12 +84,14 @@ export function River({ seed, width = 1.8 }: RiverProps) {
     <mesh geometry={geometry} receiveShadow>
       <meshStandardMaterial
         ref={matRef}
-        color="#39c2ec"
+        color="#1ea8e8"
         transparent
-        opacity={0.85}
+        opacity={0.95}
         roughness={0.08}
-        metalness={0.35}
+        metalness={0.4}
         side={THREE.DoubleSide}
+        emissive="#0a4a8a"
+        emissiveIntensity={0.3}
       />
     </mesh>
   )
@@ -110,7 +112,7 @@ export function Rivers() {
   return (
     <group>
       {seeds.map((s, i) => (
-        <River key={i} seed={s} width={2.5} />
+        <River key={i} seed={s} width={4.0} />
       ))}
     </group>
   )

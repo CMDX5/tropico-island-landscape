@@ -81,30 +81,30 @@ function GrassTuft({ p }: { p: Placement }) {
 /*  Vegetation collection                                                      */
 /* -------------------------------------------------------------------------- */
 
-export function Vegetation({ palmCount = 220 }: { palmCount?: number }) {
+export function Vegetation({ palmCount = 280 }: { palmCount?: number }) {
   // palm trees on beaches and sandy lowlands
   const palms = useMemo(
     () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, biome: ['sand', 'plain'] }),
     [palmCount],
   )
-  // dense jungle: broadleaf trees saturate the jungle biome (very wet)
+  // dense jungle: broadleaf trees saturate the jungle biome (~60% of island)
   const broadleaf = useMemo(
-    () => scatter(500, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'jungle' }),
+    () => scatter(900, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'jungle' }),
     [],
   )
-  // bushes scattered on plains and hills
+  // bushes scattered on plains, hills and jungle
   const bushes = useMemo(
-    () => scatter(200, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle'] }),
+    () => scatter(300, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle'] }),
     [],
   )
   // rocks scattered on beaches, slopes, mountains and plateaus
   const rocks = useMemo(
-    () => scatter(80, { minH: -0.5, maxH: 22, maxSlope: 2.8, seed: 99, minScale: 0.6, maxScale: 2.4, biome: ['sand', 'mountain', 'hill', 'plateau'] }),
+    () => scatter(140, { minH: -0.5, maxH: 52, maxSlope: 2.8, seed: 99, minScale: 0.6, maxScale: 2.4, biome: ['sand', 'mountain', 'hill', 'plateau'] }),
     [],
   )
   // beach grass near the shore
   const grass = useMemo(
-    () => scatter(180, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
+    () => scatter(260, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
     [],
   )
 
