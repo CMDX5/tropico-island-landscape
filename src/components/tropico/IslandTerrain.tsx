@@ -3,21 +3,20 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { ISLAND_SIZE, islandHeight, islandColor } from './terrain'
+import { makeSandTexture, makeGrassTexture, makeRockTexture } from './terrainTextures'
 
 /**
  * Procedural island terrain built as a custom XZ grid.
- * Each vertex height + color is derived from the shared `islandHeight`
- * / `islandColor` functions so that vegetation placement matches the
- * ground exactly.
+ *
+ * Surface detail uses GPU splat-mapping: three procedural noise textures
+ * (sand / grass / rock) are blended in the fragment shader by world
+ * height and slope, on top of the per-vertex biome color. The toon
+ * cel-shading (gradient map) is preserved.
  */
 export function IslandTerrain() {
   // 3-step cel-shading gradient map for a cartoon painted look
   const gradientMap = useMemo(() => {
-    const data = new Uint8Array([
-      110, 110, 110, 255,
-      175, 175, 175, 255,
-      255, 255, 255, 255,
-    ])
+    const data = new Uint8Array([110, 110, 110, 255, 175, 175, 175, 255, 255, 255, 255])
     const tex = new THREE.DataTexture(data, 3, 1, THREE.RGBAFormat)
     tex.needsUpdate = true
     tex.minFilter = THREE.NearestFilter
@@ -42,8 +41,7 @@ export function IslandTerrain() {
         const h = islandHeight(x, z)
         positions.push(x, h, z)
         islandColor(h, col)
-        // subtle per-vertex tint so it doesn't look flat
-        const tint = 0.92 + ((i * 31 + j * 17) % 16) / 16 * 0.16
+        const tint = 0.92 + (((i * 31 + j * 17) % 16) / 16) * 0.16
         colors.push(col.r * tint, col.g * tint, col.b * tint)
       }
     }
@@ -53,7 +51,6 @@ export function IslandTerrain() {
         const b = a + 1
         const c = a + (seg + 1)
         const d = c + 1
-        // CCW from above -> normals point up
         indices.push(a, c, b)
         indices.push(b, c, d)
       }
@@ -67,9 +64,71 @@ export function IslandTerrain() {
     return geo
   }, [])
 
+  const material = useMemo(() => {
+    const sand = makeSandTexture()
+    const grass = makeGrassTexture()
+    const rock = makeRockTexture()
+
+    const mat = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap })
+    mat.onBeforeCompile = (shader) => {
+      shader.uniforms.uSand = { value: sand }
+      shader.uniforms.uGrass = { value: grass }
+      shader.uniforms.uRock = { value: rock }
+      shader.uniforms.uTexScale = { value: 0.18 }
+
+      shader.vertexShader = shader.vertexShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+          varying vec3 vWorldPos;
+          varying vec3 vWorldNormal;`,
+        )
+        .replace(
+          '#include <begin_vertex>',
+          `#include <begin_vertex>
+          vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+          vWorldNormal = normalize(mat3(modelMatrix) * normal);`,
+        )
+
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+          varying vec3 vWorldPos;
+          varying vec3 vWorldNormal;
+          uniform sampler2D uSand;
+          uniform sampler2D uGrass;
+          uniform sampler2D uRock;
+          uniform float uTexScale;
+          float hash2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }`,
+        )
+        .replace(
+          '#include <color_fragment>',
+          `#include <color_fragment>
+          {
+            vec2 uv = vWorldPos.xz * uTexScale;
+            vec3 sandC = texture2D(uSand, uv).rgb;
+            vec3 grassC = texture2D(uGrass, uv).rgb;
+            vec3 rockC = texture2D(uRock, uv).rgb;
+            float h = vWorldPos.y;
+            float slope = vWorldNormal.y; // 1 flat, 0 vertical
+            float sandW = smoothstep(1.8, 0.2, h);
+            float rockW = smoothstep(9.0, 13.5, h);
+            float steep = smoothstep(0.78, 0.5, slope);
+            rockW = max(rockW, steep);
+            sandW *= (1.0 - steep);
+            float grassW = clamp(1.0 - sandW - rockW, 0.0, 1.0) * (1.0 - steep);
+            vec3 splat = sandC * sandW + grassC * grassW + rockC * rockW;
+            diffuseColor.rgb = mix(diffuseColor.rgb, splat, 0.5);
+            float grain = hash2(vWorldPos.xz * 9.0) * 0.06 - 0.03;
+            diffuseColor.rgb += grain;
+          }`,
+        )
+    }
+    return mat
+  }, [gradientMap])
+
   return (
-    <mesh geometry={geometry} receiveShadow castShadow>
-      <meshToonMaterial vertexColors gradientMap={gradientMap} />
-    </mesh>
+    <mesh geometry={geometry} material={material} receiveShadow castShadow />
   )
 }

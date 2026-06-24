@@ -9,6 +9,7 @@ import { Ocean } from './Ocean'
 import { Vegetation } from './Vegetation'
 import { IslandClouds } from './Clouds'
 import { Rivers } from './Rivers'
+import { PostFX } from './PostFX'
 
 const SUN_POSITION: [number, number, number] = [60, 70, -30]
 
@@ -22,8 +23,8 @@ export function IslandScene() {
   return (
     <Canvas
       shadows
-      dpr={[1, 1.8]}
-      gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
+      dpr={[1, 1.5]}
+      gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping }}
     >
       <color attach="background" args={['#bfe9f2']} />
       <fog attach="fog" args={['#bfe9f2', 180, 460]} />
@@ -63,6 +64,8 @@ export function IslandScene() {
         <Vegetation palmCount={120} />
         <IslandClouds />
       </Suspense>
+
+      <PostFX />
 
       <OrbitControls
         enablePan
