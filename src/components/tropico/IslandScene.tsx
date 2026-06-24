@@ -10,6 +10,7 @@ import { Vegetation } from './Vegetation'
 import { IslandClouds } from './Clouds'
 import { Rivers } from './Rivers'
 import { PostFX } from './PostFX'
+import { Buildings } from './Buildings'
 
 const SUN_POSITION: [number, number, number] = [60, 70, -30]
 
@@ -61,6 +62,7 @@ export function IslandScene() {
         <IslandTerrain />
         <Rivers />
         <Ocean />
+        <Buildings />
         <Vegetation palmCount={120} />
         <IslandClouds />
       </Suspense>

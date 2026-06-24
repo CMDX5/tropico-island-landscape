@@ -57,7 +57,8 @@ export function islandHeight(x: number, z: number): number {
   const falloff = Math.max(0, 1 - Math.pow(d / ISLAND_RADIUS, 2.3))
   const base = fbm(x * 0.045, z * 0.045, 5)
   const ridge = 1 - Math.abs(fbm(x * 0.03 + 50, z * 0.03 + 50, 4) * 2 - 1)
-  let h = falloff * 9 + (base - 0.5) * falloff * 7 + ridge * ridge * falloff * 7 - 2.2
+  // Boosted relief: taller ridges + stronger hills for visible mountains
+  let h = falloff * 10 + (base - 0.5) * falloff * 8 + ridge * ridge * falloff * 14 - 2.2
   return h
 }
 
