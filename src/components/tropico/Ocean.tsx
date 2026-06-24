@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { islandHeight } from './terrain'
 
-const SIZE = 800
+const SIZE = 4000
 const SEGMENTS = 60
 
 /**
