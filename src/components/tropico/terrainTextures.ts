@@ -28,45 +28,32 @@ function makeNoiseTexture(
   return tex
 }
 
-/** Warm grainy sand with strong grain contrast. */
-export function makeSandTexture(size = 256): THREE.DataTexture {
+/** Warm grainy sand with fine sparkle. */
+export function makeSandTexture(size = 128): THREE.DataTexture {
   return makeNoiseTexture(size, (u, v) => {
-    const n = fbm(u * 10, v * 10, 4)
-    const grain = fbm(u * 50, v * 50, 2)
-    const pebble = fbm(u * 100, v * 100, 2)
-    const k = 0.7 + n * 0.3 + grain * 0.15 + pebble * 0.1
-    return [0.98 * k, 0.84 * k, 0.52 * k]
+    const n = fbm(u * 12, v * 12, 4)
+    const grain = fbm(u * 45, v * 45, 2)
+    const k = 0.82 + n * 0.22 + grain * 0.1
+    return [0.96 * k, 0.85 * k, 0.57 * k]
   })
 }
 
-/** Green grass with strong blade contrast. */
-export function makeGrassTexture(size = 256): THREE.DataTexture {
+/** Green grass with blade-like medium-frequency variation. */
+export function makeGrassTexture(size = 128): THREE.DataTexture {
   return makeNoiseTexture(size, (u, v) => {
-    const n = fbm(u * 8, v * 8, 4)
-    const blade = fbm(u * 35, v * 35, 2)
-    const tuft = fbm(u * 80, v * 80, 2)
-    const k = 0.6 + n * 0.4 + blade * 0.25 + tuft * 0.1
-    return [0.24 * k, 0.62 * k, 0.14 * k]
+    const n = fbm(u * 9, v * 9, 4)
+    const blade = fbm(u * 32, v * 32, 2)
+    const k = 0.72 + n * 0.34 + blade * 0.16
+    return [0.28 * k, 0.6 * k, 0.16 * k]
   })
 }
 
-/** Warm tan-brown rock with strong cracks. */
-export function makeRockTexture(size = 256): THREE.DataTexture {
+/** Warm tan-brown rock with low-frequency cracks. */
+export function makeRockTexture(size = 128): THREE.DataTexture {
   return makeNoiseTexture(size, (u, v) => {
-    const n = fbm(u * 5, v * 5, 5)
-    const crack = 1 - Math.abs(fbm(u * 12, v * 12, 3) * 2 - 1)
-    const detail = fbm(u * 40, v * 40, 2)
-    const k = 0.75 + n * 0.25 - crack * 0.35 + detail * 0.1
-    return [0.82 * k, 0.58 * k, 0.38 * k]
-  })
-}
-
-/** Crisp white snow with faint blue glitter. */
-export function makeSnowTexture(size = 256): THREE.DataTexture {
-  return makeNoiseTexture(size, (u, v) => {
-    const n = fbm(u * 18, v * 18, 3)
-    const grain = fbm(u * 60, v * 60, 2)
-    const k = 0.9 + n * 0.1 + grain * 0.05
-    return [k, k, 0.98 * k]
+    const n = fbm(u * 6, v * 6, 5)
+    const crack = 1 - Math.abs(fbm(u * 15, v * 15, 3) * 2 - 1)
+    const k = 0.8 + n * 0.2 - crack * 0.22
+    return [0.78 * k, 0.6 * k, 0.42 * k]
   })
 }

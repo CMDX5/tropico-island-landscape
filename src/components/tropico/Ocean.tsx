@@ -3,23 +3,21 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { islandHeight, ISLAND_RADIUS } from './terrain'
+import { islandHeight } from './terrain'
 
 const SIZE = 500
-const SEGMENTS = 110
+const SEGMENTS = 90
 
 /**
- * Premium animated tropical ocean (custom ShaderMaterial):
+ * Animated tropical ocean with:
  *  - rolling wave vertex displacement
- *  - depth gradient: turquoise shallow -> deep blue offshore (by distance to island)
- *  - fresnel refraction tint (sky color mixes in at grazing angles)
- *  - specular sun glitter (time-varying, sharp highlights)
- *  - animated coastal foam (peaks at the shoreline, shimmers with waves)
- *  - subsurface scattering tint for shallow water glow
+ *  - coastal foam (precomputed from terrain height below each vertex)
+ *  - sun glitter (time-varying high-frequency sparkle in the shader)
+ * A deep-blue base plane sits below the transparent turquoise surface.
  */
 export function Ocean() {
   const surfaceRef = useRef<THREE.Mesh>(null!)
-  const uniformsRef = useRef<{ [k: string]: { value: unknown } } | null>(null)
+  const shaderRef = useRef<{ uniforms: Record<string, { value: unknown }> } | null>(null)
   const baseRef = useRef<Float32Array | null>(null)
 
   // Logical grid (x, z) used for wave math — independent of the geometry
@@ -38,113 +36,71 @@ export function Ocean() {
     return { xs, zs }
   }, [])
 
-  // Build the plane geometry once: rotate flat, then bake per-vertex
-  // foam factor + depth factor from the terrain heightfield.
+  // Build the plane geometry once: rotate flat, then bake a per-vertex
+  // foam factor from the terrain heightfield (peaks at the shoreline).
   const geometry = useMemo(() => {
     const g = new THREE.PlaneGeometry(SIZE, SIZE, SEGMENTS, SEGMENTS)
     g.rotateX(-Math.PI / 2)
     const pos = g.attributes.position as THREE.BufferAttribute
     const foam = new Float32Array(pos.count)
-    const depth = new Float32Array(pos.count)
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i)
       const z = pos.getZ(i)
       const h = islandHeight(x, z)
-      // foam where terrain is near sea level
+      // foam where terrain is near sea level; none on land or deep water
       foam[i] = Math.max(0, 1 - Math.abs(h) / 1.3)
-      // depth: 0 at the shore, 1 far out at sea
-      const d = Math.sqrt(x * x + z * z)
-      depth[i] = Math.min(1, Math.max(0, (d - ISLAND_RADIUS * 0.7) / (ISLAND_RADIUS * 1.4)))
     }
     g.setAttribute('foam', new THREE.BufferAttribute(foam, 1))
-    g.setAttribute('depth', new THREE.BufferAttribute(depth, 1))
     baseRef.current = new Float32Array(pos.array)
     return g
   }, [])
 
   const material = useMemo(() => {
-    const uniforms = {
-      uTime: { value: 0 },
-      uSunDir: { value: new THREE.Vector3(60, 70, -30).normalize() },
-      uSunColor: { value: new THREE.Color('#fff3d6') },
-      uSkyColor: { value: new THREE.Color('#bfe9f2') },
-      uShallow: { value: new THREE.Color('#3fd0e8') }, // turquoise shallow
-      uDeep: { value: new THREE.Color('#0a4d7a') }, // deep blue offshore
-      uFoamColor: { value: new THREE.Color('#ffffff') },
-    }
-    uniformsRef.current = uniforms
-
-    return new THREE.ShaderMaterial({
-      uniforms,
+    const mat = new THREE.MeshStandardMaterial({
+      color: '#1ea8cf',
       transparent: true,
-      vertexShader: /* glsl */ `
-        attribute float foam;
-        attribute float depth;
-        varying vec3 vWorldPos;
-        varying vec3 vWorldNormal;
-        varying float vFoam;
-        varying float vDepth;
-        void main() {
-          vFoam = foam;
-          vDepth = depth;
-          vec4 wp = modelMatrix * vec4(position, 1.0);
-          vWorldPos = wp.xyz;
-          vWorldNormal = normalize(mat3(modelMatrix) * normal);
-          gl_Position = projectionMatrix * viewMatrix * wp;
-        }
-      `,
-      fragmentShader: /* glsl */ `
-        precision highp float;
-        varying vec3 vWorldPos;
-        varying vec3 vWorldNormal;
-        varying float vFoam;
-        varying float vDepth;
-        uniform float uTime;
-        uniform vec3 uSunDir;
-        uniform vec3 uSunColor;
-        uniform vec3 uSkyColor;
-        uniform vec3 uShallow;
-        uniform vec3 uDeep;
-        uniform vec3 uFoamColor;
-
-        float hash2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
-
-        void main(){
-          vec3 N = normalize(vWorldNormal);
-          vec3 V = normalize(cameraPosition - vWorldPos);
-          vec3 L = normalize(uSunDir);
-
-          // depth gradient: shallow turquoise -> deep blue
-          vec3 waterCol = mix(uShallow, uDeep, vDepth);
-          // subsurface glow on shallow water facing the sun
-          float sss = pow(max(dot(N, L), 0.0), 1.5) * (1.0 - vDepth) * 0.4;
-          waterCol += uSunColor * sss;
-
-          // fresnel: sky color mixes in at grazing angles (fake refraction)
-          float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-          waterCol = mix(waterCol, uSkyColor, fres * 0.55);
-
-          // specular sun glitter (sharp, animated)
-          vec3 H = normalize(L + V);
-          float spec = pow(max(dot(N, H), 0.0), 180.0);
-          // sparkle modulation so glitter shimmers
-          float spark = hash2(vWorldPos.xz * 90.0 + vec2(uTime * 5.0, -uTime * 4.0));
-          spec *= 0.5 + spark * 1.2;
-          waterCol += uSunColor * spec * 2.0;
-
-          // animated foam: thicker + shimmering near the shore
-          float foamMask = vFoam;
-          float foamNoise = hash2(vWorldPos.xz * 25.0 + vec2(uTime * 1.5, uTime));
-          foamMask *= 0.6 + foamNoise * 0.6;
-          vec3 col = mix(waterCol, uFoamColor, clamp(foamMask * 1.3, 0.0, 1.0));
-
-          // gentle ambient lift
-          col += uSkyColor * 0.05;
-
-          gl_FragColor = vec4(col, 0.92);
-        }
-      `,
+      opacity: 0.82,
+      roughness: 0.08,
+      metalness: 0.35,
     })
+    mat.onBeforeCompile = (shader) => {
+      shader.uniforms.uTime = { value: 0 }
+      shaderRef.current = shader
+
+      shader.vertexShader = shader.vertexShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+          attribute float foam;
+          varying vec3 vWorldPos;
+          varying float vFoam;`,
+        )
+        .replace(
+          '#include <begin_vertex>',
+          `#include <begin_vertex>
+          vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+          vFoam = foam;`,
+        )
+
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+          varying vec3 vWorldPos;
+          varying float vFoam;
+          uniform float uTime;
+          float hash2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }`,
+        )
+        .replace(
+          '#include <color_fragment>',
+          `#include <color_fragment>
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95, 0.98, 1.0), vFoam * 0.85);
+          float gn = hash2(vWorldPos.xz * 70.0 + vec2(uTime * 3.0, -uTime * 2.0));
+          float glitter = pow(gn, 60.0);
+          diffuseColor.rgb += vec3(glitter * 0.9, glitter * 0.95, glitter * 1.0);`,
+        )
+    }
+    return mat
   }, [])
 
   useFrame(({ clock }) => {
@@ -166,19 +122,19 @@ export function Ocean() {
     }
     pos.needsUpdate = true
     geo.computeVertexNormals()
-    if (uniformsRef.current) {
-      ;(uniformsRef.current.uTime.value as number) = t
+    if (shaderRef.current) {
+      ;(shaderRef.current.uniforms.uTime.value as number) = t
     }
   })
 
   return (
     <group>
-      {/* deep water base */}
+      {/* deep water */}
       <mesh position={[0, -3.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[SIZE, SIZE]} />
-        <meshStandardMaterial color="#0a4d7a" roughness={0.4} metalness={0.1} />
+        <meshStandardMaterial color="#0d5b8a" roughness={0.4} metalness={0.1} />
       </mesh>
-      {/* premium animated surface */}
+      {/* shallow animated surface */}
       <mesh ref={surfaceRef} geometry={geometry} material={material} position={[0, -0.25, 0]} receiveShadow />
     </group>
   )
