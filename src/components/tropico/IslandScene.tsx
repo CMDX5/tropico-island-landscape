@@ -73,14 +73,17 @@ export function IslandScene() {
       <OrbitControls
         ref={controlsRef}
         enablePan
-        panSpeed={0.6}
+        panSpeed={0.8}
         enableRotate
+        rotateSpeed={0.7}
         minZoom={3}
         maxZoom={16}
-        maxPolarAngle={Math.PI / 2.3}
-        minPolarAngle={Math.PI / 7}
+        // Tropico 6-style constrained tilt: ~35° to ~65° from horizontal
+        // (polar angle measured from Y axis: 0=top-down, π/2=horizontal)
+        maxPolarAngle={Math.PI / 2.5}
+        minPolarAngle={Math.PI / 5.5}
         enableDamping
-        dampingFactor={0.08}
+        dampingFactor={0.1}
         target={[0, 2, 0]}
       />
 

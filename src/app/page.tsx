@@ -137,7 +137,7 @@ export default function Home() {
               <KeyCombo keys={['+', '−']} />
             </li>
             <li className="mt-1 border-t border-emerald-900/10 pt-1.5 text-[10px] text-emerald-800/80">
-              Souris : glisser = pivoter · molette = zoom
+              Souris : glisser = pivoter · molette = zoom · bord d'écran = déplacer
             </li>
           </ul>
         </aside>
@@ -149,7 +149,7 @@ export default function Home() {
           Environnement Tropico 6 · généré avec Three.js & React Three Fiber
         </p>
         <p className="flex items-center gap-2 text-[11px] text-white/70">
-          <span className="hidden sm:inline">WASD · Q/E · R/F · +/- · molette · glisser</span>
+          <span className="hidden sm:inline">WASD · Q/E · R/F · +/- · molette · bord d'écran</span>
           <span className="sm:hidden">Touchez pour explorer</span>
         </p>
       </footer>
