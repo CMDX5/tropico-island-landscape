@@ -78,15 +78,16 @@ export function IslandScene() {
         enableRotate
         rotateSpeed={0.7}
         // Tropico 6: zoom via distance (perspective), not zoom property
-        // minDistance allows zooming very close to the terrain to see detail
-        minDistance={8}
+        // Zoom range matches Tropico 6: closest shows buildings clearly,
+        // farthest shows the whole island. Not as close as ground level.
+        minDistance={25}
         maxDistance={320}
-        // Tropico 6 tilt range: ~45° to ~85° from horizontal
+        // Tropico 6 tilt range (from screenshots): ~25° to ~60° from horizontal
         // (polar measured from Y axis: 0=top-down, π/2=horizontal)
-        // 85° from horizontal = 5° from vertical = polar 0.087
-        // 45° from horizontal = 45° from vertical = polar 0.785
-        maxPolarAngle={Math.PI / 4}        // 45° from horizontal (lowest view)
-        minPolarAngle={Math.PI / 20}       // ~9° from vertical (near top-down)
+        // 25° from horizontal = 65° from vertical = polar 1.13
+        // 60° from horizontal = 30° from vertical = polar 0.52
+        maxPolarAngle={Math.PI / 2.8}      // ~64° from vertical (low/raking view when zoomed in)
+        minPolarAngle={Math.PI / 6}        // ~30° from vertical (high aerial when zoomed out)
         enableDamping
         dampingFactor={0.1}
         target={[0, 2, 0]}
