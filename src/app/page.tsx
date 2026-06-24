@@ -113,6 +113,34 @@ export default function Home() {
           <FeatureChip icon={<Box className="h-3.5 w-3.5" />} label="Vue isométrique" />
           <FeatureChip icon={<Waves className="h-3.5 w-3.5" />} label="Océan animé" />
         </div>
+
+        {/* Camera controls panel (bottom-right) — Tropico 6 style */}
+        <aside className="pointer-events-auto absolute bottom-4 right-4 z-10 hidden rounded-2xl border border-white/40 bg-white/15 p-3 shadow-lg backdrop-blur-md sm:block md:bottom-6 md:right-6">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-950">
+            Contrôles caméra
+          </p>
+          <ul className="space-y-1.5 text-[11px] text-emerald-900">
+            <li className="flex items-center justify-between gap-3">
+              <span>Déplacer</span>
+              <KeyCombo keys={['W', 'A', 'S', 'D']} />
+            </li>
+            <li className="flex items-center justify-between gap-3">
+              <span>Pivoter</span>
+              <KeyCombo keys={['Q', 'E']} />
+            </li>
+            <li className="flex items-center justify-between gap-3">
+              <span>Incliner</span>
+              <KeyCombo keys={['R', 'F']} />
+            </li>
+            <li className="flex items-center justify-between gap-3">
+              <span>Zoomer</span>
+              <KeyCombo keys={['+', '−']} />
+            </li>
+            <li className="mt-1 border-t border-emerald-900/10 pt-1.5 text-[10px] text-emerald-800/80">
+              Souris : glisser = pivoter · molette = zoom
+            </li>
+          </ul>
+        </aside>
       </div>
 
       {/* Sticky footer */}
@@ -121,7 +149,7 @@ export default function Home() {
           Environnement Tropico 6 · généré avec Three.js & React Three Fiber
         </p>
         <p className="flex items-center gap-2 text-[11px] text-white/70">
-          <span className="hidden sm:inline">Glissez pour pivoter · molette pour zoomer · clic droit pour déplacer</span>
+          <span className="hidden sm:inline">WASD · Q/E · R/F · +/- · molette · glisser</span>
           <span className="sm:hidden">Touchez pour explorer</span>
         </p>
       </footer>
@@ -134,6 +162,21 @@ function FeatureChip({ icon, label }: { icon: React.ReactNode; label: string }) 
     <span className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-2.5 py-1 text-[11px] font-medium text-emerald-900 shadow backdrop-blur-md">
       {icon}
       {label}
+    </span>
+  )
+}
+
+function KeyCombo({ keys }: { keys: string[] }) {
+  return (
+    <span className="flex items-center gap-1">
+      {keys.map((k, i) => (
+        <kbd
+          key={i}
+          className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-emerald-900/30 bg-white/70 px-1 font-mono text-[10px] font-semibold text-emerald-950 shadow-sm"
+        >
+          {k}
+        </kbd>
+      ))}
     </span>
   )
 }

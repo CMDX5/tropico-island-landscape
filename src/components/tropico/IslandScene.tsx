@@ -1,15 +1,17 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Sky, AdaptiveDpr, OrthographicCamera } from '@react-three/drei'
 import * as THREE from 'three'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { IslandTerrain } from './IslandTerrain'
 import { Ocean } from './Ocean'
 import { Vegetation } from './Vegetation'
 import { IslandClouds } from './Clouds'
 import { Rivers } from './Rivers'
 import { PostFX } from './PostFX'
+import { TropicoCamera } from './TropicoCamera'
 
 const SUN_POSITION: [number, number, number] = [60, 70, -30]
 
@@ -20,6 +22,7 @@ const SUN_POSITION: [number, number, number] = [60, 70, -30]
  * kept so you can still rotate and zoom the view.
  */
 export function IslandScene() {
+  const controlsRef = useRef<OrbitControlsImpl>(null)
   return (
     <Canvas
       shadows
@@ -68,6 +71,7 @@ export function IslandScene() {
       <PostFX />
 
       <OrbitControls
+        ref={controlsRef}
         enablePan
         panSpeed={0.6}
         enableRotate
@@ -79,6 +83,9 @@ export function IslandScene() {
         dampingFactor={0.08}
         target={[0, 2, 0]}
       />
+
+      {/* Tropico 6-style keyboard controls (WASD / Q-E / R-F / +-) */}
+      <TropicoCamera controlsRef={controlsRef} />
 
       <AdaptiveDpr pixelated />
     </Canvas>
