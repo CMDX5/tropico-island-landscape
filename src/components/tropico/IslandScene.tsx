@@ -29,8 +29,8 @@ export function IslandScene() {
       dpr={[1, 1]}
       gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'high-performance' }}
     >
-      <color attach="background" args={['#bfe9f2']} />
-      <fog attach="fog" args={['#bfe9f2', 400, 900]} />
+      <color attach="background" args={['#7ec8e3']} />
+      <fog attach="fog" args={['#9fd4ea', 550, 1400]} />
 
       {/* Tropico 6 uses a PERSPECTIVE camera (distant objects shrink).
           FOV ~50°, positioned close enough that the island fills the view. */}
@@ -65,7 +65,7 @@ export function IslandScene() {
         <IslandTerrain />
         <Rivers />
         <Ocean />
-        <Vegetation palmCount={140} />
+        <Vegetation palmCount={80} />
         <IslandClouds />
       </Suspense>
 

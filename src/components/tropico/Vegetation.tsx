@@ -81,7 +81,7 @@ function GrassTuft({ p }: { p: Placement }) {
 /*  Vegetation collection                                                      */
 /* -------------------------------------------------------------------------- */
 
-export function Vegetation({ palmCount = 140 }: { palmCount?: number }) {
+export function Vegetation({ palmCount = 80 }: { palmCount?: number }) {
   // palm trees on beaches and sandy lowlands
   const palms = useMemo(
     () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, biome: ['sand', 'plain'] }),
@@ -89,22 +89,22 @@ export function Vegetation({ palmCount = 140 }: { palmCount?: number }) {
   )
   // broadleaf tropical trees fill the FOREST biome regions specifically
   const broadleaf = useMemo(
-    () => scatter(220, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'forest' }),
+    () => scatter(130, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'forest' }),
     [],
   )
   // bushes scattered on plains and hills
   const bushes = useMemo(
-    () => scatter(100, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'forest'] }),
+    () => scatter(60, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'forest'] }),
     [],
   )
   // rocks scattered on beaches, slopes and mountains
   const rocks = useMemo(
-    () => scatter(40, { minH: -0.5, maxH: 16, maxSlope: 2.6, seed: 99, minScale: 0.6, maxScale: 2.2, biome: ['sand', 'mountain', 'hill'] }),
+    () => scatter(25, { minH: -0.5, maxH: 16, maxSlope: 2.6, seed: 99, minScale: 0.6, maxScale: 2.2, biome: ['sand', 'mountain', 'hill'] }),
     [],
   )
   // beach grass near the shore
   const grass = useMemo(
-    () => scatter(100, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
+    () => scatter(60, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
     [],
   )
 
