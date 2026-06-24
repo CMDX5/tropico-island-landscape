@@ -37,3 +37,20 @@ Stage Summary:
 - Production-ready Tropico 6 landscape environment at /
 - Orbit controls (drag/zoom/pan), procedural terrain, animated ocean, ~70 palm trees, bushes, rocks, clouds, sun-lit sky
 - Sticky footer + responsive HUD verified across desktop and mobile
+
+---
+Task ID: 5
+Agent: main
+Task: Create a new GitHub repo and push the Tropico island project
+
+Work Log:
+- Validated GitHub token (account: CMDX5) via /user API
+- Created public repo "tropico-island-landscape" via /user/repos API
+- Added remote origin (with token) and pushed main branch successfully
+- All Tropico files confirmed present on GitHub (Clouds, IslandScene, IslandTerrain, Ocean, PalmTree, Vegetation, terrain.ts)
+- Sanitized git remote URL to remove embedded token from local git config
+
+Stage Summary:
+- Repo live at https://github.com/CMDX5/tropico-island-landscape (public, default branch: main)
+- Local git config no longer contains the token
+- Token should be revoked by user (it was shared in plaintext chat)
