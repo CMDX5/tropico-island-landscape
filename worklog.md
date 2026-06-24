@@ -164,3 +164,38 @@ Work Log:
 Stage Summary:
 - Three user-requested tweaks delivered: less cloud cover, more relief, beach houses
 - Repo updated at https://github.com/CMDX5/tropico-island-landscape
+
+---
+Task ID: 10
+Agent: main
+Task: Fix clouds (still thick center), mountain (grey/dark), houses (not visible)
+
+Work Log:
+- Clouds.tsx: reduced to 2 small wisps, pushed to far corners [-40,-32]/[42,30],
+  lower opacity (0.45/0.40), smaller bounds/volume
+- terrain.ts: warmed rock colors (C_ROCK #9c8c72->#c09877, C_ROCK_DARK #6a5c46->
+  #9a7654), lowered snow threshold (13.5->10.5) so peaks reach near-white
+- terrainTextures.ts: warmed rock texture from grey (0.55,0.47,0.39) to tan
+  (0.78,0.6,0.42)
+- IslandTerrain.tsx: brightened toon gradient map (110/175/255 -> 185/225/255),
+  lowered shader snow threshold (12->8.5), raised splat mix weight (0.5->0.55)
+- IslandScene.tsx: hemisphere sky color warmed (#dff4ff->#fff4e0, was tinting
+  mountain blue), intensity 0.8->1.0; ambient 0.3->0.55; directional 2.2->2.6
+- PostFX.tsx: SSAO intensity 18->6 (was over-darkening), DoF REMOVED (was
+  blurring central mountain and muting snow caps), vignette darkness 0.55->0.35
+- Buildings.tsx: house scale 1.4-2.0 -> 1.8-2.5; all 3 villages moved to
+  camera-facing side (+x/+z: [32,-20],[36,28],[10,34])
+- Vegetation.tsx: avoid radius 9->12 around villages
+- Diagnosed via pixel sampling: mountain was #8e989c (cool blue-grey) due to
+  blue hemisphere light + toon dark band + SSAO + DoF blur stacking; after
+  fixes mountain is #b7b2a9 (warm tan), terrain max brightness 242 (snow exists)
+- Verified VLM: clouds thin at edges center clear, mountain bright warm tan,
+  3 houses clearly visible; verified mobile clean
+- Refreshed preview; lint clean; committed (5634cff) and pushed
+
+Stage Summary:
+- All 3 user complaints resolved: clouds cleared from center, mountain warm/
+  bright (no longer grey), houses bigger and on camera-facing beaches (3 visible)
+- Note: onBeforeCompile splat-mapping shader appears not to bind textures in
+  this three.js/r3f version; vertex colors carry the biome coloring (confirmed
+  working). Snow caps exist (pixel brightness 242) but are subtle/small.
