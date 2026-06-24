@@ -114,9 +114,11 @@ export function Ocean() {
           // well off the beach — the sand reads as rigid ground.
           if (vWaveAmp < 0.15) discard;
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95, 0.98, 1.0), vFoam * 0.85);
-          float gn = hash2(vWorldPos.xz * 70.0 + vec2(uTime * 3.0, -uTime * 2.0));
-          float glitter = pow(gn, 60.0);
-          diffuseColor.rgb += vec3(glitter * 0.9, glitter * 0.95, glitter * 1.0);`,
+          // Sun glitter: multi-sample hash for fine sparkle (no banding)
+          float g1 = hash2(vWorldPos.xz * 3.7 + vec2(uTime * 0.4, -uTime * 0.3));
+          float g2 = hash2(vWorldPos.xz * 9.1 + vec2(-uTime * 0.5, uTime * 0.6));
+          float glitter = pow(g1 * g2, 12.0);
+          diffuseColor.rgb += vec3(glitter * 0.7, glitter * 0.75, glitter * 0.85);`,
         )
     }
     return mat
