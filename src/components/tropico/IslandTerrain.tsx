@@ -105,6 +105,10 @@ export function IslandTerrain() {
         .replace(
           '#include <color_fragment>',
           `#include <color_fragment>
+          // Discard fragments well below sea level so the terrain doesn't
+          // show a yellowish square border where it meets the ocean.
+          // The ocean (at y=-0.25) covers everything below ~-0.4.
+          if (vWorldPos.y < -0.5) discard;
           {
             vec2 uv = vWorldPos.xz * uTexScale;
             vec3 sandC = texture2D(uSand, uv).rgb;
