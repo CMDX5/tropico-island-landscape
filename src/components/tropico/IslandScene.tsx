@@ -2,7 +2,7 @@
 
 import { Suspense, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Sky, AdaptiveDpr, OrthographicCamera } from '@react-three/drei'
+import { OrbitControls, Sky, AdaptiveDpr, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { IslandTerrain } from './IslandTerrain'
@@ -32,8 +32,9 @@ export function IslandScene() {
       <color attach="background" args={['#bfe9f2']} />
       <fog attach="fog" args={['#bfe9f2', 280, 620]} />
 
-      {/* isometric / orthographic camera — zoomed out for the larger island */}
-      <OrthographicCamera makeDefault position={[150, 190, 150]} zoom={6} near={-1000} far={3000} />
+      {/* Tropico 6 uses a PERSPECTIVE camera (distant objects shrink).
+          FOV ~45°, positioned to show the whole island at default zoom. */}
+      <PerspectiveCamera makeDefault position={[150, 160, 150]} fov={45} near={0.5} far={3000} />
 
       {/* lighting */}
       <hemisphereLight args={['#fff4e0', '#4a5a3a', 1.0]} />
@@ -76,12 +77,15 @@ export function IslandScene() {
         panSpeed={0.8}
         enableRotate
         rotateSpeed={0.7}
-        minZoom={3}
-        maxZoom={16}
-        // Tropico 6-style constrained tilt: ~35° to ~65° from horizontal
-        // (polar angle measured from Y axis: 0=top-down, π/2=horizontal)
-        maxPolarAngle={Math.PI / 2.5}
-        minPolarAngle={Math.PI / 5.5}
+        // Tropico 6: zoom via distance (perspective), not zoom property
+        minDistance={60}
+        maxDistance={320}
+        // Tropico 6 tilt range: ~45° to ~85° from horizontal
+        // (polar measured from Y axis: 0=top-down, π/2=horizontal)
+        // 85° from horizontal = 5° from vertical = polar 0.087
+        // 45° from horizontal = 45° from vertical = polar 0.785
+        maxPolarAngle={Math.PI / 4}        // 45° from horizontal (lowest view)
+        minPolarAngle={Math.PI / 20}       // ~9° from vertical (near top-down)
         enableDamping
         dampingFactor={0.1}
         target={[0, 2, 0]}
