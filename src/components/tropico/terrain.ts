@@ -51,7 +51,18 @@ export const ISLAND_RADIUS = 260 // radius where the island fades into the sea (
 /*  Spatial biome masks (large-scale regions)                                  */
 /* -------------------------------------------------------------------------- */
 
-export type Biome = 'sand' | 'plain' | 'forest' | 'mountain' | 'hill'
+export type Biome = 'sand' | 'plain' | 'jungle' | 'mountain' | 'hill' | 'volcano' | 'plateau'
+
+/**
+ * Central volcano mask: strong near the island center, fades out.
+ * Returns 0..1 (1 at the very center).
+ */
+function volcanoMask(x: number, z: number): number {
+  const d = Math.sqrt(x * x + z * z)
+  // volcano cone within ~22% of island radius from center
+  const r = ISLAND_RADIUS * 0.22
+  return Math.max(0, 1 - Math.pow(d / r, 2.0))
+}
 
 /**
  * Low-frequency mask that localises mountain ranges to specific regions
@@ -63,11 +74,20 @@ function mountainMask(x: number, z: number): number {
 }
 
 /**
- * Low-frequency mask that localises dense forest to specific regions.
+ * Low-frequency mask that localises dense jungle to specific regions.
+ * Wider threshold for lush coverage (very wet climate).
  */
-function forestMask(x: number, z: number): number {
+function jungleMask(x: number, z: number): number {
   const n = fbm(x * 0.018 + 500, z * 0.018 + 500, 3)
-  return Math.max(0, smoothstep(0.48, 0.6, n))
+  return Math.max(0, smoothstep(0.42, 0.56, n))
+}
+
+/**
+ * Low-frequency mask for rocky plateaus on high ground (arid zones).
+ */
+function plateauMask(x: number, z: number): number {
+  const n = fbm(x * 0.016 + 900, z * 0.016 + 900, 3)
+  return Math.max(0, smoothstep(0.55, 0.7, n))
 }
 
 /**
@@ -85,16 +105,23 @@ function smoothstep(a: number, b: number, t: number): number {
 
 /**
  * Returns the dominant biome at a world position, using spatial masks so
- * that sand / plain / forest / mountain / hill occupy different regions
- * of the island rather than being stacked by altitude.
+ * that sand / plain / jungle / mountain / volcano / plateau / hill occupy
+ * different regions of the island.
  */
 export function biomeAt(x: number, z: number, height: number): Biome {
-  // Coastline is always sand
+  // Coastline is always white sand
   if (height < 0.6) return 'sand'
+  // Central volcano takes priority
+  if (volcanoMask(x, z) > 0.3 && height > 6) return 'volcano'
+  // Rocky plateaus on high ground
+  if (height > 8 && plateauMask(x, z) > 0.5) return 'plateau'
+  // Mountains
   const m = mountainMask(x, z)
   if (m > 0.5 && height > 4) return 'mountain'
-  const f = forestMask(x, z)
-  if (f > 0.5) return 'forest'
+  // Dense jungle (very wet climate)
+  const j = jungleMask(x, z)
+  if (j > 0.5) return 'jungle'
+  // Rolling hills
   const hh = hillMask(x, z)
   if (hh > 0.5) return 'hill'
   return 'plain'
@@ -102,22 +129,36 @@ export function biomeAt(x: number, z: number, height: number): Biome {
 
 /**
  * Terrain height at a given world (x, z) coordinate.
- * Mostly FLAT (per user request) with localised relief:
- *  - gentle base lift from the radial falloff
- *  - mild hills everywhere
- *  - strong mountain ridges ONLY where the mountain mask is high
+ * Mostly flat with a CENTRAL VOLCANO (tall cone), localised mountains,
+ * plateaus, and gentle hills.
  */
 export function islandHeight(x: number, z: number): number {
   const d = Math.sqrt(x * x + z * z)
   const falloff = Math.max(0, 1 - Math.pow(d / ISLAND_RADIUS, 2.3))
   const base = fbm(x * 0.045, z * 0.045, 5)
-  // very gentle base relief (flat island)
+  // gentle base relief (mostly flat, fertile lowlands)
   let h = falloff * 2.5 + (base - 0.5) * falloff * 2.5 - 1.6
+  // CENTRAL VOLCANO: tall cone with crater rim
+  const vMask = volcanoMask(x, z)
+  if (vMask > 0) {
+    const volcanoD = Math.sqrt(x * x + z * z)
+    const volcanoR = ISLAND_RADIUS * 0.22
+    // cone shape: height decreases with distance from center
+    const cone = Math.max(0, 1 - volcanoD / volcanoR)
+    // crater: dip at the very center
+    const crater = volcanoD < volcanoR * 0.25 ? Math.cos(volcanoD / (volcanoR * 0.25) * Math.PI * 0.5) * 4 : 0
+    h += cone * cone * 32 - crater
+  }
   // localised mountains (only in mountain regions)
   const mMask = mountainMask(x, z)
   if (mMask > 0) {
     const ridge = 1 - Math.abs(fbm(x * 0.03 + 50, z * 0.03 + 50, 4) * 2 - 1)
     h += ridge * ridge * mMask * falloff * 18
+  }
+  // rocky plateaus: flat-topped elevated zones
+  const pMask = plateauMask(x, z)
+  if (pMask > 0 && h > 4) {
+    h += pMask * 6
   }
   // gentle hills in hill regions
   const hMask = hillMask(x, z)
@@ -131,22 +172,24 @@ export function islandHeight(x: number, z: number): number {
 /*  Terrain coloring (Tropico-style bright tropical palette)                  */
 /* -------------------------------------------------------------------------- */
 
-// Saturated cartoon palette (Tropico 6 vibe) — vibrant tropical colors
-const C_WET_SAND = new THREE.Color('#d9b878')
-const C_SAND = new THREE.Color('#f5d488')
-const C_GRASS = new THREE.Color('#4ec638')
-const C_GRASS_DARK = new THREE.Color('#2a8a1e')
-const C_FOREST = new THREE.Color('#1a6a14')
-const C_ROCK = new THREE.Color('#c09877')
-const C_ROCK_DARK = new THREE.Color('#9a7654')
+// Saturated cartoon palette (Tropico 6 vibe) — white sand, lush jungle, dark volcano
+const C_WET_SAND = new THREE.Color('#e8dcc4')
+const C_SAND = new THREE.Color('#fdf3d4')      // white sand (Tropico 6)
+const C_GRASS = new THREE.Color('#5ed638')      // vibrant prairie
+const C_GRASS_DARK = new THREE.Color('#2e9a1e')
+const C_FOREST = new THREE.Color('#0f7a10')     // dense jungle (saturated)
+const C_ROCK = new THREE.Color('#b89878')
+const C_ROCK_DARK = new THREE.Color('#7a6248')
+const C_VOLCANO = new THREE.Color('#4a3a30')    // dark volcanic rock
+const C_LAVA = new THREE.Color('#ff5a1e')       // lava glow at crater
 const C_SNOW = new THREE.Color('#ffffff')
 
 const _tmp = new THREE.Color()
 
 /**
- * Terrain color at a position. Uses the spatial biome (so sand / plain /
- * forest / mountain / hill occupy distinct regions) combined with altitude
- * for snow caps on the highest peaks.
+ * Terrain color at a position. Uses the spatial biome so each region
+ * (white sand, prairie, jungle, mountain, volcano, plateau, hill) has a
+ * distinct color. Volcano crater glows with lava.
  */
 export function islandColorAt(x: number, z: number, height: number, out: THREE.Color = _tmp): THREE.Color {
   const biome = biomeAt(x, z, height)
@@ -162,7 +205,7 @@ export function islandColorAt(x: number, z: number, height: number, out: THREE.C
     case 'hill':
       out.copy(C_GRASS_DARK).lerp(C_GRASS, 0.3)
       break
-    case 'forest':
+    case 'jungle':
       out.copy(C_FOREST).lerp(C_GRASS_DARK, 0.3)
       break
     case 'mountain':
@@ -174,6 +217,23 @@ export function islandColorAt(x: number, z: number, height: number, out: THREE.C
         out.copy(C_GRASS_DARK).lerp(C_ROCK, Math.min(1, (height - 4) / 5))
       }
       break
+    case 'plateau':
+      // arid rocky plateau: tan rock with sparse vegetation tint
+      out.copy(C_ROCK).lerp(C_ROCK_DARK, Math.min(1, (height - 8) / 6))
+      break
+    case 'volcano': {
+      const vd = Math.sqrt(x * x + z * z)
+      const vr = ISLAND_RADIUS * 0.22
+      if (vd < vr * 0.3) {
+        // crater: lava glow
+        out.copy(C_LAVA)
+      } else {
+        // volcanic slopes: dark rock, lighter toward base
+        const t = Math.min(1, (vd - vr * 0.3) / (vr * 0.7))
+        out.copy(C_VOLCANO).lerp(C_ROCK_DARK, t * 0.7)
+      }
+      break
+    }
   }
   out.multiplyScalar(tint)
   return out

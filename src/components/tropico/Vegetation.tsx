@@ -87,24 +87,24 @@ export function Vegetation({ palmCount = 220 }: { palmCount?: number }) {
     () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, biome: ['sand', 'plain'] }),
     [palmCount],
   )
-  // broadleaf tropical trees fill the FOREST biome regions specifically
+  // dense jungle: broadleaf trees saturate the jungle biome (very wet)
   const broadleaf = useMemo(
-    () => scatter(360, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'forest' }),
+    () => scatter(500, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'jungle' }),
     [],
   )
   // bushes scattered on plains and hills
   const bushes = useMemo(
-    () => scatter(180, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'forest'] }),
+    () => scatter(200, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle'] }),
     [],
   )
-  // rocks scattered on beaches, slopes and mountains
+  // rocks scattered on beaches, slopes, mountains and plateaus
   const rocks = useMemo(
-    () => scatter(60, { minH: -0.5, maxH: 16, maxSlope: 2.6, seed: 99, minScale: 0.6, maxScale: 2.2, biome: ['sand', 'mountain', 'hill'] }),
+    () => scatter(80, { minH: -0.5, maxH: 22, maxSlope: 2.8, seed: 99, minScale: 0.6, maxScale: 2.4, biome: ['sand', 'mountain', 'hill', 'plateau'] }),
     [],
   )
   // beach grass near the shore
   const grass = useMemo(
-    () => scatter(160, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
+    () => scatter(180, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
     [],
   )
 

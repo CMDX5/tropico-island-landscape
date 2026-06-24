@@ -96,21 +96,21 @@ export function River({ seed, width = 1.8 }: RiverProps) {
 }
 
 /**
- * A few rivers seeded on high ground, each flowing down to the sea.
+ * Rivers seeded on the volcano slopes, flowing down to the sea in
+ * different directions (Tropico 6 style).
  */
 export function Rivers() {
-  const seeds: Array<[number, number]> = useMemo(
-    () => [
-      [14, -6],
-      [-16, 12],
-      [4, 20],
-    ],
-    [],
-  )
+  // seeds placed on the volcano rim (~22% of island radius from center)
+  // in 4 directions so rivers radiate outward to the sea
+  const seeds: Array<[number, number]> = useMemo(() => {
+    const r = 52 // volcano rim distance from center
+    const dirs = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2]
+    return dirs.map((a) => [Math.cos(a) * r, Math.sin(a) * r] as [number, number])
+  }, [])
   return (
     <group>
       {seeds.map((s, i) => (
-        <River key={i} seed={s} width={2.0} />
+        <River key={i} seed={s} width={2.5} />
       ))}
     </group>
   )
