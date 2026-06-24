@@ -57,10 +57,10 @@ export function IslandScene() {
       <Suspense fallback={null}>
         <Sky
           sunPosition={SUN_POSITION}
-          turbidity={5}
-          rayleigh={1}
+          turbidity={8}
+          rayleigh={2.5}
           mieCoefficient={0.005}
-          mieDirectionalG={0.9}
+          mieDirectionalG={0.7}
         />
         <IslandTerrain />
         <Rivers />
