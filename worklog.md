@@ -199,3 +199,39 @@ Stage Summary:
 - Note: onBeforeCompile splat-mapping shader appears not to bind textures in
   this three.js/r3f version; vertex colors carry the biome coloring (confirmed
   working). Snow caps exist (pixel brightness 242) but are subtle/small.
+
+---
+Task ID: 11
+Agent: main
+Task: Custom splat-mapping shader, premium ocean, instanced forest (render upgrade)
+
+Work Log:
+- terrainTextures.ts: boosted texture resolution 128->256, stronger contrast
+  (multi-octave noise, higher freq detail, pebble/tuft layers)
+- IslandTerrain.tsx: rewrote with full custom ShaderMaterial (not onBeforeCompile)
+  - 4 textures (sand/grass/rock/snow) blended by height + slope
+  - 3-step cel-shading (diffuse quantised into bands)
+  - per-fragment bump-noise normal perturbation (vnoise)
+  - hemisphere + sun lighting, uTexScale 0.4, splat blend 0.78
+- Ocean.tsx: rewrote with full custom ShaderMaterial
+  - per-vertex depth attribute (turquoise shallow -> deep blue offshore)
+  - fresnel refraction (sky color at grazing angles)
+  - subsurface scattering glow on shallow water
+  - specular sun glitter (pow 180, animated sparkles)
+  - animated coastal foam (shimmering, thicker at shoreline)
+  - 110 segments for smoother waves
+- Created InstancedForest.tsx: 800 broadleaf trees via InstancedMesh
+  (3 instanced meshes: trunk + 2 canopy blobs, single draw call each)
+  per-instance scale/rotation, useLayoutEffect for matrices, canopy wobble
+- Vegetation.tsx: removed individual broadleaf trees (replaced by InstancedForest)
+- IslandScene.tsx: wired InstancedForest count=800
+- Lint clean, no shader/runtime errors, page returns 200
+- Pixel variance measured: grass stdev 16.9, rock stdev 19.4 (textures applied)
+- Water ratio 81.8%, vegetation 17.2% (balanced visibility)
+- Committed (adfd679) and pushed to GitHub
+
+Stage Summary:
+- Three major render upgrades delivered: custom splat-mapping shader, premium
+  ocean (depth gradient + fresnel + glitter + foam), instanced forest (800 trees)
+- Note: VLM struggles to see subtle shader details at 1280px screenshot res;
+  pixel variance confirms textures are applied. User should judge in live preview.
