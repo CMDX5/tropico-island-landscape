@@ -54,3 +54,23 @@ Stage Summary:
 - Repo live at https://github.com/CMDX5/tropico-island-landscape (public, default branch: main)
 - Local git config no longer contains the token
 - Token should be revoked by user (it was shared in plaintext chat)
+
+---
+Task ID: 6
+Agent: main
+Task: Add README.md with preview screenshot and usage instructions
+
+Work Log:
+- Captured fresh screenshot of the rendered island (1440x860) -> public/tropico-preview.png
+- Verified screenshot quality with VLM (island centered, balanced composition)
+- Wrote comprehensive French README.md: features table, tech stack, install steps,
+  how-to-view-result section (covers local + Z.ai sandbox preview panel), controls
+  table, project structure tree, biome palette table, technical overview, scripts
+- Committed and pushed to GitHub (commit b917575)
+- Sanitized git remote URL to remove token again after push
+- Verified README.md and public/ are live on GitHub
+
+Stage Summary:
+- README.md live at https://github.com/CMDX5/tropico-island-landscape
+- Hero image renders in the repo homepage
+- Clear instructions for viewing the result both locally and in the Z.ai sandbox
