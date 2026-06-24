@@ -26,7 +26,7 @@ export function IslandTerrain() {
   }, [])
 
   const geometry = useMemo(() => {
-    const seg = 260
+    const seg = 140
     const half = ISLAND_SIZE / 2
     const step = ISLAND_SIZE / seg
     const positions: number[] = []
@@ -123,8 +123,6 @@ export function IslandTerrain() {
             float snowW = smoothstep(8.5, 12.0, h) * (1.0 - steep * 0.6);
             splat = mix(splat, vec3(1.0), snowW);
             diffuseColor.rgb = mix(diffuseColor.rgb, splat, 0.55);
-            float grain = hash2(vWorldPos.xz * 9.0) * 0.06 - 0.03;
-            diffuseColor.rgb += grain;
           }`,
         )
     }

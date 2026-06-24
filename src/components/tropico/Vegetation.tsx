@@ -16,7 +16,7 @@ function Rock({ p }: { p: Placement }) {
       position={p.position}
       scale={[p.scale, p.scale * 0.7, p.scale]}
       rotation={[p.rotation * 0.4, p.rotation, p.rotation * 0.6]}
-      castShadow
+     
       receiveShadow
     >
       <dodecahedronGeometry args={[0.6, 0]} />
@@ -32,15 +32,15 @@ function Rock({ p }: { p: Placement }) {
 function Bush({ p }: { p: Placement }) {
   return (
     <group position={p.position} scale={p.scale} rotation={[0, p.rotation, 0]}>
-      <mesh position={[0, 0.35, 0]} castShadow>
+      <mesh position={[0, 0.35, 0]}>
         <icosahedronGeometry args={[0.42, 1]} />
         <meshStandardMaterial color="#2f7d2a" roughness={0.9} flatShading />
       </mesh>
-      <mesh position={[0.3, 0.28, 0.15]} castShadow>
+      <mesh position={[0.3, 0.28, 0.15]}>
         <icosahedronGeometry args={[0.28, 1]} />
         <meshStandardMaterial color="#358f2e" roughness={0.9} flatShading />
       </mesh>
-      <mesh position={[-0.25, 0.3, -0.1]} castShadow>
+      <mesh position={[-0.25, 0.3, -0.1]}>
         <icosahedronGeometry args={[0.26, 1]} />
         <meshStandardMaterial color="#2a7326" roughness={0.9} flatShading />
       </mesh>
@@ -68,7 +68,7 @@ function GrassTuft({ p }: { p: Placement }) {
   return (
     <group position={p.position} scale={p.scale} rotation={[0, p.rotation, 0]}>
       {blades.map((b, i) => (
-        <mesh key={i} position={[b[0], 0.18, b[2]]} rotation={[b[3], 0, b[3]]} castShadow>
+        <mesh key={i} position={[b[0], 0.18, b[2]]} rotation={[b[3], 0, b[3]]}>
           <coneGeometry args={[0.04, 0.4, 4]} />
           <meshStandardMaterial color="#7fae3a" roughness={0.9} />
         </mesh>
@@ -81,7 +81,7 @@ function GrassTuft({ p }: { p: Placement }) {
 /*  Vegetation collection                                                      */
 /* -------------------------------------------------------------------------- */
 
-export function Vegetation({ palmCount = 180 }: { palmCount?: number }) {
+export function Vegetation({ palmCount = 60 }: { palmCount?: number }) {
   // palm trees on beaches and sandy lowlands
   const palms = useMemo(
     () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, biome: ['sand', 'plain'] }),
@@ -89,22 +89,22 @@ export function Vegetation({ palmCount = 180 }: { palmCount?: number }) {
   )
   // broadleaf tropical trees fill the FOREST biome regions specifically
   const broadleaf = useMemo(
-    () => scatter(220, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'forest' }),
+    () => scatter(80, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'forest' }),
     [],
   )
   // bushes scattered on plains and hills
   const bushes = useMemo(
-    () => scatter(120, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'forest'] }),
+    () => scatter(40, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'forest'] }),
     [],
   )
   // rocks scattered on beaches, slopes and mountains
   const rocks = useMemo(
-    () => scatter(60, { minH: -0.5, maxH: 16, maxSlope: 2.6, seed: 99, minScale: 0.6, maxScale: 2.2, biome: ['sand', 'mountain', 'hill'] }),
+    () => scatter(20, { minH: -0.5, maxH: 16, maxSlope: 2.6, seed: 99, minScale: 0.6, maxScale: 2.2, biome: ['sand', 'mountain', 'hill'] }),
     [],
   )
   // beach grass near the shore
   const grass = useMemo(
-    () => scatter(120, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
+    () => scatter(40, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
     [],
   )
 

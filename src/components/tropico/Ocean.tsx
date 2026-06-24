@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { islandHeight } from './terrain'
 
 const SIZE = 500
-const SEGMENTS = 90
+const SEGMENTS = 50
 
 /**
  * Animated tropical ocean with:
@@ -137,7 +137,6 @@ export function Ocean() {
       const amp = waveAmpAttr.getX(i)
       // skip rigid (on-land/shallow) vertices entirely — no displacement
       if (amp <= 0.01) {
-        pos.setY(i, base[i * 3 + 1])
         continue
       }
       const wave =
@@ -147,7 +146,8 @@ export function Ocean() {
       pos.setY(i, base[i * 3 + 1] + wave)
     }
     pos.needsUpdate = true
-    geo.computeVertexNormals()
+    // Normals NOT recomputed every frame (perf) — waves are gentle and
+    // static normals look fine. Was the single biggest perf killer.
     if (shaderRef.current) {
       ;(shaderRef.current.uniforms.uTime.value as number) = t
     }

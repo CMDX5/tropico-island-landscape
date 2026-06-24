@@ -26,8 +26,8 @@ export function IslandScene() {
   return (
     <Canvas
       shadows
-      dpr={[1, 1.5]}
-      gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping }}
+      dpr={[1, 1]}
+      gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'high-performance' }}
     >
       <color attach="background" args={['#bfe9f2']} />
       <fog attach="fog" args={['#bfe9f2', 280, 620]} />
@@ -44,7 +44,7 @@ export function IslandScene() {
         intensity={2.6}
         color="#fff3d6"
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
         shadow-camera-near={1}
         shadow-camera-far={600}
         shadow-camera-left={-220}
@@ -65,7 +65,7 @@ export function IslandScene() {
         <IslandTerrain />
         <Rivers />
         <Ocean />
-        <Vegetation palmCount={180} />
+        <Vegetation palmCount={60} />
         <IslandClouds />
       </Suspense>
 
