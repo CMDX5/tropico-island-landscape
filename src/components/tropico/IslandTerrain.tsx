@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import * as THREE from 'three'
-import { ISLAND_SIZE, islandHeight, islandColor } from './terrain'
+import { ISLAND_SIZE, islandHeight, islandColorAt } from './terrain'
 import { makeSandTexture, makeGrassTexture, makeRockTexture } from './terrainTextures'
 
 /**
@@ -26,7 +26,7 @@ export function IslandTerrain() {
   }, [])
 
   const geometry = useMemo(() => {
-    const seg = 220
+    const seg = 260
     const half = ISLAND_SIZE / 2
     const step = ISLAND_SIZE / seg
     const positions: number[] = []
@@ -40,7 +40,7 @@ export function IslandTerrain() {
         const z = -half + j * step
         const h = islandHeight(x, z)
         positions.push(x, h, z)
-        islandColor(h, col)
+        islandColorAt(x, z, h, col)
         const tint = 0.92 + (((i * 31 + j * 17) % 16) / 16) * 0.16
         colors.push(col.r * tint, col.g * tint, col.b * tint)
       }

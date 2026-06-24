@@ -44,21 +44,86 @@ export function fbm(x: number, y: number, octaves = 5): number {
 /*  Island shape                                                               */
 /* -------------------------------------------------------------------------- */
 
-export const ISLAND_SIZE = 110 // world units covered by the terrain grid
-export const ISLAND_RADIUS = 46 // radius where the island fades into the sea
+export const ISLAND_SIZE = 220 // world units covered by the terrain grid (enlarged)
+export const ISLAND_RADIUS = 92 // radius where the island fades into the sea (enlarged)
+
+/* -------------------------------------------------------------------------- */
+/*  Spatial biome masks (large-scale regions)                                  */
+/* -------------------------------------------------------------------------- */
+
+export type Biome = 'sand' | 'plain' | 'forest' | 'mountain' | 'hill'
+
+/**
+ * Low-frequency mask that localises mountain ranges to specific regions
+ * of the island (not everywhere). Returns 0..1.
+ */
+function mountainMask(x: number, z: number): number {
+  const n = fbm(x * 0.013 + 200, z * 0.013 + 200, 3)
+  return Math.max(0, smoothstep(0.48, 0.6, n))
+}
+
+/**
+ * Low-frequency mask that localises dense forest to specific regions.
+ */
+function forestMask(x: number, z: number): number {
+  const n = fbm(x * 0.018 + 500, z * 0.018 + 500, 3)
+  return Math.max(0, smoothstep(0.48, 0.6, n))
+}
+
+/**
+ * Low-frequency mask for rolling hill regions (gentle elevated grassland).
+ */
+function hillMask(x: number, z: number): number {
+  const n = fbm(x * 0.02 + 800, z * 0.02 + 800, 3)
+  return Math.max(0, smoothstep(0.48, 0.62, n))
+}
+
+function smoothstep(a: number, b: number, t: number): number {
+  const x = Math.max(0, Math.min(1, (t - a) / (b - a)))
+  return x * x * (3 - 2 * x)
+}
+
+/**
+ * Returns the dominant biome at a world position, using spatial masks so
+ * that sand / plain / forest / mountain / hill occupy different regions
+ * of the island rather than being stacked by altitude.
+ */
+export function biomeAt(x: number, z: number, height: number): Biome {
+  // Coastline is always sand
+  if (height < 0.6) return 'sand'
+  const m = mountainMask(x, z)
+  if (m > 0.5 && height > 4) return 'mountain'
+  const f = forestMask(x, z)
+  if (f > 0.5) return 'forest'
+  const hh = hillMask(x, z)
+  if (hh > 0.5) return 'hill'
+  return 'plain'
+}
 
 /**
  * Terrain height at a given world (x, z) coordinate.
- * Uses a radial falloff so the island sits in the middle of the ocean,
- * layered fBm noise for hills, and a ridge term for mountain crests.
+ * Mostly FLAT (per user request) with localised relief:
+ *  - gentle base lift from the radial falloff
+ *  - mild hills everywhere
+ *  - strong mountain ridges ONLY where the mountain mask is high
  */
 export function islandHeight(x: number, z: number): number {
   const d = Math.sqrt(x * x + z * z)
   const falloff = Math.max(0, 1 - Math.pow(d / ISLAND_RADIUS, 2.3))
   const base = fbm(x * 0.045, z * 0.045, 5)
-  const ridge = 1 - Math.abs(fbm(x * 0.03 + 50, z * 0.03 + 50, 4) * 2 - 1)
-  // Boosted relief: taller ridges + stronger hills for visible mountains
-  let h = falloff * 10 + (base - 0.5) * falloff * 8 + ridge * ridge * falloff * 14 - 2.2
+  // very gentle base relief (flat island)
+  let h = falloff * 2.5 + (base - 0.5) * falloff * 2.5 - 1.6
+  // localised mountains (only in mountain regions)
+  const mMask = mountainMask(x, z)
+  if (mMask > 0) {
+    const ridge = 1 - Math.abs(fbm(x * 0.03 + 50, z * 0.03 + 50, 4) * 2 - 1)
+    h += ridge * ridge * mMask * falloff * 18
+  }
+  // gentle hills in hill regions
+  const hMask = hillMask(x, z)
+  if (hMask > 0) {
+    h += (base - 0.5) * hMask * falloff * 4
+  }
   return h
 }
 
@@ -78,24 +143,39 @@ const C_SNOW = new THREE.Color('#ffffff')
 
 const _tmp = new THREE.Color()
 
-export function islandColor(height: number, out: THREE.Color = _tmp): THREE.Color {
-  if (height < -1.4) {
-    out.copy(C_WET_SAND)
-  } else if (height < 0.3) {
-    out.copy(C_WET_SAND).lerp(C_SAND, (height + 1.4) / 1.7)
-  } else if (height < 1.8) {
-    out.copy(C_SAND).lerp(C_GRASS, (height - 0.3) / 1.5)
-  } else if (height < 4.5) {
-    out.copy(C_GRASS).lerp(C_GRASS_DARK, (height - 1.8) / 2.7)
-  } else if (height < 7.5) {
-    out.copy(C_GRASS_DARK).lerp(C_FOREST, (height - 4.5) / 3)
-  } else if (height < 9.5) {
-    out.copy(C_FOREST).lerp(C_ROCK, (height - 7.5) / 2)
-  } else if (height < 10.5) {
-    out.copy(C_ROCK).lerp(C_ROCK_DARK, (height - 9.5) / 1)
-  } else {
-    out.copy(C_ROCK_DARK).lerp(C_SNOW, Math.min(1, (height - 10.5) / 2))
+/**
+ * Terrain color at a position. Uses the spatial biome (so sand / plain /
+ * forest / mountain / hill occupy distinct regions) combined with altitude
+ * for snow caps on the highest peaks.
+ */
+export function islandColorAt(x: number, z: number, height: number, out: THREE.Color = _tmp): THREE.Color {
+  const biome = biomeAt(x, z, height)
+  // subtle per-position tint
+  const tint = 0.92 + (fbm(x * 0.3, z * 0.3, 2) - 0.5) * 0.16
+  switch (biome) {
+    case 'sand':
+      out.copy(height < -0.5 ? C_WET_SAND : C_SAND)
+      break
+    case 'plain':
+      out.copy(C_GRASS).lerp(C_GRASS_DARK, Math.min(1, height / 4) * 0.5)
+      break
+    case 'hill':
+      out.copy(C_GRASS_DARK).lerp(C_GRASS, 0.3)
+      break
+    case 'forest':
+      out.copy(C_FOREST).lerp(C_GRASS_DARK, 0.3)
+      break
+    case 'mountain':
+      if (height > 13) {
+        out.copy(C_ROCK_DARK).lerp(C_SNOW, Math.min(1, (height - 13) / 3))
+      } else if (height > 9) {
+        out.copy(C_ROCK).lerp(C_ROCK_DARK, (height - 9) / 4)
+      } else {
+        out.copy(C_GRASS_DARK).lerp(C_ROCK, Math.min(1, (height - 4) / 5))
+      }
+      break
   }
+  out.multiplyScalar(tint)
   return out
 }
 
@@ -171,11 +251,13 @@ export function scatter(
     minScale?: number
     maxScale?: number
     avoid?: Array<{ x: number; z: number; r: number }>
+    biome?: Biome | Biome[]
   },
 ): Placement[] {
   const rand = makeRng(opts.seed)
   const area = opts.area ?? ISLAND_RADIUS * 2
   const maxSlope = opts.maxSlope ?? 1.4
+  const biomeList = opts.biome ? (Array.isArray(opts.biome) ? opts.biome : [opts.biome]) : null
   const result: Placement[] = []
   let attempts = 0
   while (result.length < count && attempts < count * 30) {
@@ -184,6 +266,10 @@ export function scatter(
     const z = (rand() - 0.5) * area
     const h = islandHeight(x, z)
     if (h < opts.minH || h > opts.maxH) continue
+    if (biomeList) {
+      const b = biomeAt(x, z, h)
+      if (!biomeList.includes(b)) continue
+    }
     const hx = islandHeight(x + 0.8, z)
     const hz = islandHeight(x, z + 0.8)
     const slope = Math.abs(hx - h) + Math.abs(hz - h)

@@ -27,10 +27,10 @@ export function IslandScene() {
       gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping }}
     >
       <color attach="background" args={['#bfe9f2']} />
-      <fog attach="fog" args={['#bfe9f2', 180, 460]} />
+      <fog attach="fog" args={['#bfe9f2', 280, 620]} />
 
-      {/* isometric / orthographic camera */}
-      <OrthographicCamera makeDefault position={[85, 110, 85]} zoom={9} near={-500} far={1500} />
+      {/* isometric / orthographic camera — zoomed out for the larger island */}
+      <OrthographicCamera makeDefault position={[150, 190, 150]} zoom={6} near={-1000} far={3000} />
 
       {/* lighting */}
       <hemisphereLight args={['#fff4e0', '#4a5a3a', 1.0]} />
@@ -42,11 +42,11 @@ export function IslandScene() {
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-near={1}
-        shadow-camera-far={400}
-        shadow-camera-left={-110}
-        shadow-camera-right={110}
-        shadow-camera-top={110}
-        shadow-camera-bottom={-110}
+        shadow-camera-far={600}
+        shadow-camera-left={-220}
+        shadow-camera-right={220}
+        shadow-camera-top={220}
+        shadow-camera-bottom={-220}
         shadow-bias={-0.0004}
       />
 
@@ -61,7 +61,7 @@ export function IslandScene() {
         <IslandTerrain />
         <Rivers />
         <Ocean />
-        <Vegetation palmCount={120} />
+        <Vegetation palmCount={180} />
         <IslandClouds />
       </Suspense>
 
@@ -71,8 +71,8 @@ export function IslandScene() {
         enablePan
         panSpeed={0.6}
         enableRotate
-        minZoom={4.5}
-        maxZoom={20}
+        minZoom={3}
+        maxZoom={16}
         maxPolarAngle={Math.PI / 2.3}
         minPolarAngle={Math.PI / 7}
         enableDamping
