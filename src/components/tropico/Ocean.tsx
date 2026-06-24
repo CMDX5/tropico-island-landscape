@@ -36,21 +36,33 @@ export function Ocean() {
     return { xs, zs }
   }, [])
 
-  // Build the plane geometry once: rotate flat, then bake a per-vertex
-  // foam factor from the terrain heightfield (peaks at the shoreline).
+  // Build the plane geometry once: rotate flat, then bake per-vertex
+  // foam factor + wave-amplitude mask from the terrain heightfield.
+  // The amplitude mask is 0 on land (so water doesn't move under the
+  // beaches/terrain) and 1 offshore (full waves).
   const geometry = useMemo(() => {
     const g = new THREE.PlaneGeometry(SIZE, SIZE, SEGMENTS, SEGMENTS)
     g.rotateX(-Math.PI / 2)
     const pos = g.attributes.position as THREE.BufferAttribute
     const foam = new Float32Array(pos.count)
+    const waveAmp = new Float32Array(pos.count)
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i)
       const z = pos.getZ(i)
       const h = islandHeight(x, z)
       // foam where terrain is near sea level; none on land or deep water
       foam[i] = Math.max(0, 1 - Math.abs(h) / 1.3)
+      // wave amplitude: 0 where terrain is above sea level (land/beach),
+      // ramps up to 1 a few units offshore so the coast stays stable.
+      if (h > 0.2) {
+        waveAmp[i] = 0 // on land — no wave displacement
+      } else {
+        // h <= 0.2 (underwater): full waves, gentle ramp near shore
+        waveAmp[i] = Math.min(1, Math.max(0, (-h) / 2.5))
+      }
     }
     g.setAttribute('foam', new THREE.BufferAttribute(foam, 1))
+    g.setAttribute('waveAmp', new THREE.BufferAttribute(waveAmp, 1))
     baseRef.current = new Float32Array(pos.array)
     return g
   }, [])
@@ -72,14 +84,17 @@ export function Ocean() {
           '#include <common>',
           `#include <common>
           attribute float foam;
+          attribute float waveAmp;
           varying vec3 vWorldPos;
-          varying float vFoam;`,
+          varying float vFoam;
+          varying float vWaveAmp;`,
         )
         .replace(
           '#include <begin_vertex>',
           `#include <begin_vertex>
           vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
-          vFoam = foam;`,
+          vFoam = foam;
+          vWaveAmp = waveAmp;`,
         )
 
       shader.fragmentShader = shader.fragmentShader
@@ -88,12 +103,16 @@ export function Ocean() {
           `#include <common>
           varying vec3 vWorldPos;
           varying float vFoam;
+          varying float vWaveAmp;
           uniform float uTime;
           float hash2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }`,
         )
         .replace(
           '#include <color_fragment>',
           `#include <color_fragment>
+          // discard fragments that are on land (no wave amplitude) so the
+          // transparent water surface doesn't cover the beaches/terrain.
+          if (vWaveAmp < 0.02) discard;
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95, 0.98, 1.0), vFoam * 0.85);
           float gn = hash2(vWorldPos.xz * 70.0 + vec2(uTime * 3.0, -uTime * 2.0));
           float glitter = pow(gn, 60.0);
@@ -108,16 +127,23 @@ export function Ocean() {
     if (!mesh) return
     const geo = mesh.geometry as THREE.BufferGeometry
     const pos = geo.attributes.position as THREE.BufferAttribute
+    const waveAmpAttr = geo.attributes.waveAmp as THREE.BufferAttribute
     const t = clock.getElapsedTime()
     const { xs, zs } = grid
     const base = baseRef.current!
     for (let i = 0; i < pos.count; i++) {
       const x = xs[i]
       const z = zs[i]
+      const amp = waveAmpAttr.getX(i)
+      // skip flat (on-land) vertices entirely — no displacement at all
+      if (amp <= 0.001) {
+        pos.setY(i, base[i * 3 + 1])
+        continue
+      }
       const wave =
-        Math.sin(x * 0.12 + t * 0.9) * 0.28 +
-        Math.cos(z * 0.1 + t * 0.7) * 0.24 +
-        Math.sin((x + z) * 0.06 + t * 0.5) * 0.18
+        (Math.sin(x * 0.12 + t * 0.9) * 0.28 +
+          Math.cos(z * 0.1 + t * 0.7) * 0.24 +
+          Math.sin((x + z) * 0.06 + t * 0.5) * 0.18) * amp
       pos.setY(i, base[i * 3 + 1] + wave)
     }
     pos.needsUpdate = true
