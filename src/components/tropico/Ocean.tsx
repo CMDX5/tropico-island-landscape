@@ -50,15 +50,15 @@ export function Ocean() {
       const x = pos.getX(i)
       const z = pos.getZ(i)
       const h = islandHeight(x, z)
-      // foam where terrain is near sea level; none on land or deep water
-      foam[i] = Math.max(0, 1 - Math.abs(h) / 1.3)
-      // wave amplitude: 0 where terrain is above sea level (land/beach),
-      // ramps up to 1 a few units offshore so the coast stays stable.
-      if (h > 0.2) {
-        waveAmp[i] = 0 // on land — no wave displacement
+      // foam ONLY in actual water near the shore (h < 0), never on sand/land
+      foam[i] = h < 0 ? Math.max(0, 1 - (-h) / 1.0) : 0
+      // wave amplitude: 0 where terrain is at/above sea level (beach/land),
+      // ramps up quickly offshore so the coast stays rock-solid.
+      if (h > -0.5) {
+        waveAmp[i] = 0 // on beach or shallow — rigid, no displacement
       } else {
-        // h <= 0.2 (underwater): full waves, gentle ramp near shore
-        waveAmp[i] = Math.min(1, Math.max(0, (-h) / 2.5))
+        // h < -0.5 (underwater): full waves, steep ramp away from shore
+        waveAmp[i] = Math.min(1, Math.max(0, (-h - 0.5) / 1.5))
       }
     }
     g.setAttribute('foam', new THREE.BufferAttribute(foam, 1))
@@ -110,9 +110,9 @@ export function Ocean() {
         .replace(
           '#include <color_fragment>',
           `#include <color_fragment>
-          // discard fragments that are on land (no wave amplitude) so the
-          // transparent water surface doesn't cover the beaches/terrain.
-          if (vWaveAmp < 0.02) discard;
+          // discard fragments near the coast so the water surface stays
+          // well off the beach — the sand reads as rigid ground.
+          if (vWaveAmp < 0.15) discard;
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95, 0.98, 1.0), vFoam * 0.85);
           float gn = hash2(vWorldPos.xz * 70.0 + vec2(uTime * 3.0, -uTime * 2.0));
           float glitter = pow(gn, 60.0);
@@ -135,8 +135,8 @@ export function Ocean() {
       const x = xs[i]
       const z = zs[i]
       const amp = waveAmpAttr.getX(i)
-      // skip flat (on-land) vertices entirely — no displacement at all
-      if (amp <= 0.001) {
+      // skip rigid (on-land/shallow) vertices entirely — no displacement
+      if (amp <= 0.01) {
         pos.setY(i, base[i * 3 + 1])
         continue
       }
