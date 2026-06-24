@@ -139,3 +139,28 @@ Stage Summary:
 - Terrain now has GPU splat-mapped procedural textures (not flat color)
 - Ocean has coastal foam + sun glitter
 - Render verified as "polished game render" by VLM
+
+---
+Task ID: 9
+Agent: main
+Task: Lighter clouds, taller mountains, Caribbean beach houses
+
+Work Log:
+- Clouds.tsx: halved segments/bounds/volume, lowered opacity (0.7->0.55 etc.),
+  pushed positions to edges + higher altitude so island is clearly visible
+- terrain.ts islandHeight(): boosted relief — ridge 7->14, hills 7->8, base 9->10
+  (taller peaks, more elevation contrast, snow caps)
+- Created Buildings.tsx: CaribbeanHouse (plinth + painted walls + pyramidal roof
+  + door + 3 windows, flat-shaded), 6 wall colors + 6 roof colors; placeVillage()
+  disc-samples low-altitude gentle-slope spots; two villages (7 + 5 houses)
+- Wired <Buildings/> into IslandScene between Ocean and Vegetation
+- Verified with VLM: clouds small/sparse (island visible), clear mountain relief,
+  ~4 colorful houses visible near beaches, no errors
+- Verified mobile (390x844): clean, properly framed
+- Updated README features (added houses row) + structure (Buildings.tsx)
+- Refreshed preview screenshot; lint clean
+- Committed (b99e67e) and pushed to GitHub
+
+Stage Summary:
+- Three user-requested tweaks delivered: less cloud cover, more relief, beach houses
+- Repo updated at https://github.com/CMDX5/tropico-island-landscape
