@@ -5,8 +5,8 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { islandHeight } from './terrain'
 
-const SIZE = 500
-const SEGMENTS = 50
+const SIZE = 800
+const SEGMENTS = 60
 
 /**
  * Animated tropical ocean with:

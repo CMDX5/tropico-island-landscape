@@ -30,11 +30,11 @@ export function IslandScene() {
       gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'high-performance' }}
     >
       <color attach="background" args={['#bfe9f2']} />
-      <fog attach="fog" args={['#bfe9f2', 280, 620]} />
+      <fog attach="fog" args={['#bfe9f2', 400, 900]} />
 
       {/* Tropico 6 uses a PERSPECTIVE camera (distant objects shrink).
-          FOV ~45°, positioned to show the whole island at default zoom. */}
-      <PerspectiveCamera makeDefault position={[150, 160, 150]} fov={45} near={0.5} far={3000} />
+          FOV ~45°, positioned so the large island fills the view. */}
+      <PerspectiveCamera makeDefault position={[180, 200, 180]} fov={50} near={0.5} far={4000} />
 
       {/* lighting */}
       <hemisphereLight args={['#fff4e0', '#4a5a3a', 1.0]} />
@@ -46,11 +46,11 @@ export function IslandScene() {
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-camera-near={1}
-        shadow-camera-far={600}
-        shadow-camera-left={-220}
-        shadow-camera-right={220}
-        shadow-camera-top={220}
-        shadow-camera-bottom={-220}
+        shadow-camera-far={900}
+        shadow-camera-left={-340}
+        shadow-camera-right={340}
+        shadow-camera-top={340}
+        shadow-camera-bottom={-340}
         shadow-bias={-0.0004}
       />
 
@@ -80,8 +80,8 @@ export function IslandScene() {
         // Tropico 6: zoom via distance (perspective), not zoom property
         // Zoom range matches Tropico 6: closest shows buildings clearly,
         // farthest shows the whole island. Not as close as ground level.
-        minDistance={25}
-        maxDistance={320}
+        minDistance={35}
+        maxDistance={480}
         // Tropico 6 tilt range (from screenshots): ~25° to ~60° from horizontal
         // (polar measured from Y axis: 0=top-down, π/2=horizontal)
         // 25° from horizontal = 65° from vertical = polar 1.13
