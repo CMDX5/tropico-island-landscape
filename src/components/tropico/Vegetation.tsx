@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { scatter, type Placement } from './terrain'
 import { PalmTree } from './PalmTree'
+import { BroadleafTree } from './BroadleafTree'
 
 /* -------------------------------------------------------------------------- */
 /*  Rocks                                                                      */
@@ -80,15 +81,20 @@ function GrassTuft({ p }: { p: Placement }) {
 /*  Vegetation collection                                                      */
 /* -------------------------------------------------------------------------- */
 
-export function Vegetation({ palmCount = 70 }: { palmCount?: number }) {
-  // palm trees on grassy lowlands
+export function Vegetation({ palmCount = 120 }: { palmCount?: number }) {
+  // palm trees on grassy lowlands (denser)
   const palms = useMemo(
     () => scatter(palmCount, { minH: 0.5, maxH: 6.5, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35 }),
     [palmCount],
   )
+  // broadleaf tropical trees fill the forest belt (dense canopy)
+  const broadleaf = useMemo(
+    () => scatter(110, { minH: 2.5, maxH: 9, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5 }),
+    [],
+  )
   // bushes a bit higher up
   const bushes = useMemo(
-    () => scatter(55, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4 }),
+    () => scatter(80, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4 }),
     [],
   )
   // rocks scattered on beaches and slopes
@@ -107,6 +113,9 @@ export function Vegetation({ palmCount = 70 }: { palmCount?: number }) {
       {palms.map((p, i) => (
         <PalmProxy key={`p${i}`} p={p} index={i} />
       ))}
+      {broadleaf.map((p, i) => (
+        <BroadleafProxy key={`t${i}`} p={p} index={i} />
+      ))}
       {bushes.map((p, i) => (
         <Bush key={`b${i}`} p={p} />
       ))}
@@ -123,4 +132,9 @@ export function Vegetation({ palmCount = 70 }: { palmCount?: number }) {
 // Wrapper so each palm gets a stable `variant` without re-randomising
 function PalmProxy({ p, index }: { p: Placement; index: number }) {
   return <PalmTree position={p.position} scale={p.scale} rotation={p.rotation} variant={index} />
+}
+
+// Wrapper so each broadleaf gets a stable `variant`
+function BroadleafProxy({ p, index }: { p: Placement; index: number }) {
+  return <BroadleafTree position={p.position} scale={p.scale} rotation={p.rotation} variant={index} />
 }

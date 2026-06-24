@@ -11,6 +11,21 @@ import { ISLAND_SIZE, islandHeight, islandColor } from './terrain'
  * ground exactly.
  */
 export function IslandTerrain() {
+  // 3-step cel-shading gradient map for a cartoon painted look
+  const gradientMap = useMemo(() => {
+    const data = new Uint8Array([
+      110, 110, 110, 255,
+      175, 175, 175, 255,
+      255, 255, 255, 255,
+    ])
+    const tex = new THREE.DataTexture(data, 3, 1, THREE.RGBAFormat)
+    tex.needsUpdate = true
+    tex.minFilter = THREE.NearestFilter
+    tex.magFilter = THREE.NearestFilter
+    tex.generateMipmaps = false
+    return tex
+  }, [])
+
   const geometry = useMemo(() => {
     const seg = 220
     const half = ISLAND_SIZE / 2
@@ -54,7 +69,7 @@ export function IslandTerrain() {
 
   return (
     <mesh geometry={geometry} receiveShadow castShadow>
-      <meshStandardMaterial vertexColors roughness={0.96} metalness={0} />
+      <meshToonMaterial vertexColors gradientMap={gradientMap} />
     </mesh>
   )
 }

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import { Palmtree, Mountain, Waves, Trees, Sparkles, Compass, Info } from 'lucide-react'
+import { Palmtree, Mountain, Waves, Trees, Sparkles, Compass, Info, Droplets, Box } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -108,7 +108,9 @@ export default function Home() {
         {/* Feature chips (bottom-left) */}
         <div className="pointer-events-none absolute bottom-4 left-4 z-10 flex flex-wrap gap-2 sm:bottom-6 sm:left-6">
           <FeatureChip icon={<Mountain className="h-3.5 w-3.5" />} label="Montagnes" />
-          <FeatureChip icon={<Trees className="h-3.5 w-3.5" />} label="Palmiers" />
+          <FeatureChip icon={<Trees className="h-3.5 w-3.5" />} label="Forêt dense" />
+          <FeatureChip icon={<Droplets className="h-3.5 w-3.5" />} label="Rivières" />
+          <FeatureChip icon={<Box className="h-3.5 w-3.5" />} label="Vue isométrique" />
           <FeatureChip icon={<Waves className="h-3.5 w-3.5" />} label="Océan animé" />
         </div>
       </div>

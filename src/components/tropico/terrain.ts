@@ -65,14 +65,15 @@ export function islandHeight(x: number, z: number): number {
 /*  Terrain coloring (Tropico-style bright tropical palette)                  */
 /* -------------------------------------------------------------------------- */
 
-const C_WET_SAND = new THREE.Color('#b89b6a')
-const C_SAND = new THREE.Color('#ecd49a')
-const C_GRASS = new THREE.Color('#62ab44')
-const C_GRASS_DARK = new THREE.Color('#3f8330')
-const C_FOREST = new THREE.Color('#2d6a22')
-const C_ROCK = new THREE.Color('#8a7a63')
-const C_ROCK_DARK = new THREE.Color('#5f5340')
-const C_SNOW = new THREE.Color('#f2f2f2')
+// Saturated cartoon palette (Tropico 6 vibe)
+const C_WET_SAND = new THREE.Color('#c6a868')
+const C_SAND = new THREE.Color('#f5dc94')
+const C_GRASS = new THREE.Color('#5ec638')
+const C_GRASS_DARK = new THREE.Color('#3a9a26')
+const C_FOREST = new THREE.Color('#1f7a1a')
+const C_ROCK = new THREE.Color('#9c8c72')
+const C_ROCK_DARK = new THREE.Color('#6a5c46')
+const C_SNOW = new THREE.Color('#ffffff')
 
 const _tmp = new THREE.Color()
 
@@ -95,6 +96,44 @@ export function islandColor(height: number, out: THREE.Color = _tmp): THREE.Colo
     out.copy(C_ROCK_DARK).lerp(C_SNOW, Math.min(1, (height - 13.5) / 3))
   }
   return out
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Rivers (downhill descent tracing)                                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Trace a river from a high seed point downhill to the coast using
+ * greedy gradient descent on the island height field. Returns the
+ * path as a list of [x, z] world coordinates.
+ */
+export function traceRiver(sx: number, sz: number, maxSteps = 400): Array<[number, number]> {
+  const path: Array<[number, number]> = [[sx, sz]]
+  let x = sx
+  let z = sz
+  const step = 0.9
+  for (let i = 0; i < maxSteps; i++) {
+    const h = islandHeight(x, z)
+    if (h < 0.3) break // reached the beach / sea
+    const hL = islandHeight(x - step, z)
+    const hR = islandHeight(x + step, z)
+    const hD = islandHeight(x, z - step)
+    const hU = islandHeight(x, z + step)
+    const gx = (hR - hL) / (2 * step)
+    const gz = (hU - hD) / (2 * step)
+    const len = Math.hypot(gx, gz)
+    if (len < 0.002) {
+      // stalled on a flat spot — nudge with a tiny random walk downhill
+      x += (Math.random() - 0.5) * step
+      z += (Math.random() - 0.5) * step
+      path.push([x, z])
+      continue
+    }
+    x -= (gx / len) * step
+    z -= (gz / len) * step
+    path.push([x, z])
+  }
+  return path
 }
 
 /* -------------------------------------------------------------------------- */
