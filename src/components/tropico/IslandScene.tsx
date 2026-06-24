@@ -78,7 +78,8 @@ export function IslandScene() {
         enableRotate
         rotateSpeed={0.7}
         // Tropico 6: zoom via distance (perspective), not zoom property
-        minDistance={60}
+        // minDistance allows zooming very close to the terrain to see detail
+        minDistance={8}
         maxDistance={320}
         // Tropico 6 tilt range: ~45° to ~85° from horizontal
         // (polar measured from Y axis: 0=top-down, π/2=horizontal)

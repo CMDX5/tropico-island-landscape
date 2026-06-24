@@ -173,7 +173,11 @@ export function TropicoCamera({ controlsRef }: Props) {
       } else {
         const p = cam as THREE.PerspectiveCamera
         const dir = p.position.clone().sub(c.target)
-        const nd = Math.max(1, dir.length() * factor)
+        // clamp to OrbitControls minDistance/maxDistance so we can zoom
+        // very close to the terrain (Tropico 6 lets you get near ground)
+        const minD = c.minDistance ?? 1
+        const maxD = c.maxDistance ?? 1000
+        const nd = THREE.MathUtils.clamp(dir.length() * factor, minD, maxD)
         p.position.copy(c.target).addScaledVector(dir.normalize(), nd)
       }
     }
