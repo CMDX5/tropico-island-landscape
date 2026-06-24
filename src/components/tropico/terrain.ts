@@ -131,12 +131,12 @@ export function islandHeight(x: number, z: number): number {
 /*  Terrain coloring (Tropico-style bright tropical palette)                  */
 /* -------------------------------------------------------------------------- */
 
-// Saturated cartoon palette (Tropico 6 vibe) — warm bright rocks
-const C_WET_SAND = new THREE.Color('#c6a868')
-const C_SAND = new THREE.Color('#f5dc94')
-const C_GRASS = new THREE.Color('#5ec638')
-const C_GRASS_DARK = new THREE.Color('#3a9a26')
-const C_FOREST = new THREE.Color('#1f7a1a')
+// Saturated cartoon palette (Tropico 6 vibe) — vibrant tropical colors
+const C_WET_SAND = new THREE.Color('#d9b878')
+const C_SAND = new THREE.Color('#f5d488')
+const C_GRASS = new THREE.Color('#4ec638')
+const C_GRASS_DARK = new THREE.Color('#2a8a1e')
+const C_FOREST = new THREE.Color('#1a6a14')
 const C_ROCK = new THREE.Color('#c09877')
 const C_ROCK_DARK = new THREE.Color('#9a7654')
 const C_SNOW = new THREE.Color('#ffffff')

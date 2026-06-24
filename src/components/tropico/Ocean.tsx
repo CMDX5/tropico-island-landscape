@@ -69,7 +69,7 @@ export function Ocean() {
 
   const material = useMemo(() => {
     const mat = new THREE.MeshStandardMaterial({
-      color: '#1ea8cf',
+      color: '#3fd8e8',
       transparent: true,
       opacity: 0.82,
       roughness: 0.08,
@@ -158,7 +158,7 @@ export function Ocean() {
       {/* deep water */}
       <mesh position={[0, -3.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[SIZE, SIZE]} />
-        <meshStandardMaterial color="#0d5b8a" roughness={0.4} metalness={0.1} />
+        <meshStandardMaterial color="#0a6d9a" roughness={0.4} metalness={0.1} />
       </mesh>
       {/* shallow animated surface */}
       <mesh ref={surfaceRef} geometry={geometry} material={material} position={[0, -0.25, 0]} receiveShadow />
