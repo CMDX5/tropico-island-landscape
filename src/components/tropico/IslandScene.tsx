@@ -2,7 +2,7 @@
 
 import { Suspense, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Sky, AdaptiveDpr, PerspectiveCamera } from '@react-three/drei'
+import { OrbitControls, AdaptiveDpr, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { IslandTerrain } from './IslandTerrain'
@@ -55,13 +55,41 @@ export function IslandScene() {
       />
 
       <Suspense fallback={null}>
-        <Sky
-          sunPosition={SUN_POSITION}
-          turbidity={8}
-          rayleigh={2.5}
-          mieCoefficient={0.005}
-          mieDirectionalG={0.7}
-        />
+        {/* Simple gradient sky dome (replaces drei <Sky> shader which was
+            rendering as black/white void on some GPUs). Reliable everywhere. */}
+        <mesh scale={[-1, 1, 1]}>
+          <sphereGeometry args={[2500, 32, 16]} />
+          <shaderMaterial
+            side={THREE.BackSide}
+            depthWrite={false}
+            uniforms={{
+              topColor: { value: new THREE.Color('#2a7fb8') },
+              bottomColor: { value: new THREE.Color('#bfe9f2') },
+              offset: { value: 200 },
+              exponent: { value: 0.7 },
+            }}
+            vertexShader={`
+              varying vec3 vWorldPos;
+              void main() {
+                vec4 wp = modelMatrix * vec4(position, 1.0);
+                vWorldPos = wp.xyz;
+                gl_Position = projectionMatrix * viewMatrix * wp;
+              }
+            `}
+            fragmentShader={`
+              uniform vec3 topColor;
+              uniform vec3 bottomColor;
+              uniform float offset;
+              uniform float exponent;
+              varying vec3 vWorldPos;
+              void main() {
+                float h = normalize(vWorldPos + vec3(0.0, offset, 0.0)).y;
+                float t = max(pow(max(h, 0.0), exponent), 0.0);
+                gl_FragColor = vec4(mix(bottomColor, topColor, t), 1.0);
+              }
+            `}
+          />
+        </mesh>
         <IslandTerrain />
         <Rivers />
         <Ocean />
