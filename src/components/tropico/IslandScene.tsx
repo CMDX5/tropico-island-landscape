@@ -33,8 +33,8 @@ export function IslandScene() {
       <fog attach="fog" args={['#bfe9f2', 400, 900]} />
 
       {/* Tropico 6 uses a PERSPECTIVE camera (distant objects shrink).
-          FOV ~45°, positioned so the large island fills the view. */}
-      <PerspectiveCamera makeDefault position={[180, 200, 180]} fov={50} near={0.5} far={4000} />
+          FOV ~50°, positioned close enough that the island fills the view. */}
+      <PerspectiveCamera makeDefault position={[120, 135, 120]} fov={50} near={0.5} far={4000} />
 
       {/* lighting */}
       <hemisphereLight args={['#fff4e0', '#4a5a3a', 1.0]} />
@@ -65,7 +65,7 @@ export function IslandScene() {
         <IslandTerrain />
         <Rivers />
         <Ocean />
-        <Vegetation palmCount={60} />
+        <Vegetation palmCount={140} />
         <IslandClouds />
       </Suspense>
 
@@ -81,7 +81,7 @@ export function IslandScene() {
         // Zoom range matches Tropico 6: closest shows buildings clearly,
         // farthest shows the whole island. Not as close as ground level.
         minDistance={35}
-        maxDistance={480}
+        maxDistance={280}
         // Tropico 6 tilt range (from screenshots): ~25° to ~60° from horizontal
         // (polar measured from Y axis: 0=top-down, π/2=horizontal)
         // 25° from horizontal = 65° from vertical = polar 1.13
