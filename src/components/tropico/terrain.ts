@@ -133,9 +133,10 @@ export function biomeAt(x: number, z: number, height: number): Biome {
  * Mostly flat with a CENTRAL VOLCANO (tall cone + snow cap), localised
  * mountains, plateaus, and gentle hills.
  *
- * IMPORTANT: anywhere inside the island disc (falloff > 0) the terrain
- * is clamped to stay ABOVE sea level so no blue water holes appear in
- * the interior. Only the surrounding ocean is water.
+ * The island has a STEEP coastal dropoff: inside the island disc the
+ * terrain stays above sea level (no blue holes); outside the disc the
+ * terrain plunges well below sea level so the ocean covers it directly
+ * (no flat sandy plateau around the island).
  */
 export function islandHeight(x: number, z: number): number {
   const d = Math.sqrt(x * x + z * z)
@@ -173,6 +174,14 @@ export function islandHeight(x: number, z: number): number {
   // so beaches/land read as solid, never as water holes.
   if (falloff > 0.02 && h < 0.8) {
     h = 0.8
+  }
+  // STEEP COASTAL DROPOFF: outside the island disc, plunge the terrain
+  // deep underwater so the ocean covers it directly (no flat sandy plateau).
+  // The further from the island, the deeper it goes.
+  if (falloff <= 0.02) {
+    // beyond the island: drop to -8 (well below the ocean surface at -0.25)
+    // so the discard shader hides it and the ocean renders on top.
+    h = -8 - Math.min(20, Math.max(0, (d - ISLAND_RADIUS) * 0.3))
   }
   return h
 }
