@@ -235,3 +235,36 @@ Stage Summary:
   ocean (depth gradient + fresnel + glitter + foam), instanced forest (800 trees)
 - Note: VLM struggles to see subtle shader details at 1280px screenshot res;
   pixel variance confirms textures are applied. User should judge in live preview.
+
+---
+Task ID: 12
+Agent: main
+Task: Larger flatter island with spatially separated biomes (no buildings)
+
+Work Log:
+- Researched Tropico 6 island sizes (~256x256 tiles for largest maps)
+- terrain.ts: ISLAND_SIZE 110->220, ISLAND_RADIUS 46->92 (nearly doubled)
+- Added 3 spatial biome masks (mountain/forest/hill) via low-freq fbm so
+  each biome occupies a distinct region of the island
+- islandHeight() rewritten: mostly flat base (falloff*2.5), gentle hills,
+  strong mountain ridges ONLY where mountainMask is high (localised relief)
+- New biomeAt(x,z,h) returns biome type; new islandColorAt(x,z,h) colors
+  by spatial biome (sand=wet/dry beach, plain=grass, hill=grass, forest=
+  dark green, mountain=rock+snow on peaks)
+- scatter() extended with `biome` filter for zone-aware vegetation placement
+- IslandTerrain.tsx: uses islandColorAt, grid 220->260 segments
+- Vegetation.tsx: palms on sand+plain, 220 broadleafs in forest biome,
+  bushes on plain/hill/forest, rocks on sand/mountain/hill, grass on sand
+- IslandScene.tsx: camera zoom 9->6 + repositioned [150,190,150], shadow
+  camera +/-220, fog 280-620, zoom range 3-16
+- Calibrated mask thresholds (0.48-0.6) via node script: max height 15.57,
+  9.4% mountain, 24.8% forest, 14.5% hill, 16.1% mountain mask
+- Verified VLM: large flat island, distinct separated zones (beaches coast,
+  plains center-east, forest north/south, mountains+snow center-west,
+  hills south), no errors, mobile clean
+- Committed (320a697) and pushed
+
+Stage Summary:
+- Larger (2x) flatter island with spatially separated biomes as requested
+- Zones clearly in different parts: sand / plain / forest / mountain / hill
+- No buildings, pure natural map
