@@ -74,3 +74,34 @@ Stage Summary:
 - README.md live at https://github.com/CMDX5/tropico-island-landscape
 - Hero image renders in the repo homepage
 - Clear instructions for viewing the result both locally and in the Z.ai sandbox
+
+---
+Task ID: 7
+Agent: main
+Task: Add isometric camera, rivers, dense cartoon forest (Tropico 6 map view)
+
+Work Log:
+- terrain.ts: boosted biome color saturation (Tropico palette), added traceRiver()
+  (greedy gradient-descent river path tracing from seed to coast)
+- Created Rivers.tsx: builds ribbon geometry hugging terrain along traced paths,
+  tapers width at the mouth, animated opacity for flowing feel; 3 rivers seeded
+- Created BroadleafTree.tsx: cartoon tropical broadleaf (trunk + 3 round foliage
+  icosahedrons, flat shading, wind sway)
+- Vegetation.tsx: 120 palms + 110 broadleaf + 80 bushes (dense forest)
+- IslandTerrain.tsx: switched to MeshToonMaterial + 3-step cel gradient map
+  (NearestFilter) for painted cartoon look
+- IslandScene.tsx: replaced perspective camera with OrthographicCamera (isometric
+  default angle [85,110,85], zoom 9, minZoom 4.5 / maxZoom 20), added <Rivers/>
+- page.tsx: HUD chips now Montagnes / Forêt dense / Rivières / Vue isométrique /
+  Océan animé (fixed: lucide has no River icon -> used Droplets)
+- Fixed Turbopack stale cache by clearing .next and restarting dev server
+- Verified with Agent Browser + VLM: isometric view confirmed (parallel lines),
+  rivers visible, dense forest (palms + broadleaf), cel-shaded terrain, no errors
+- Verified mobile (390x844): properly framed, no overlap
+- Refreshed public/tropico-preview.png
+- Lint clean; committed (09bc5b2) and pushed to GitHub
+
+Stage Summary:
+- Isometric orthographic map view, 3 flowing rivers, dense cartoon forest,
+  cel-shaded terrain — all matching the Tropico 6 natural-environment brief
+- Repo updated at https://github.com/CMDX5/tropico-island-landscape
