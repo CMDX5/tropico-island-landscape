@@ -103,14 +103,40 @@ function ForestLayer({
   }, [placements])
 
   useLayoutEffect(() => {
+    // Color variation per instance: dark green / medium green / lime green
+    const canopyColors = [
+      new THREE.Color('#0f5a0e'), // dark green
+      new THREE.Color('#1a7d14'), // medium green
+      new THREE.Color('#2da028'), // lime green
+      new THREE.Color('#1a6a10'), // forest green
+      new THREE.Color('#3ab030'), // bright green
+    ]
+    const canopy2Colors = [
+      new THREE.Color('#1a7d14'),
+      new THREE.Color('#2da028'),
+      new THREE.Color('#0f5a0e'),
+      new THREE.Color('#3ab030'),
+      new THREE.Color('#1a6a10'),
+    ]
     matrices.forEach((m, i) => {
       trunkRef.current?.setMatrixAt(i, m)
       canopyRef.current?.setMatrixAt(i, m)
       canopy2Ref.current?.setMatrixAt(i, m)
+      // per-instance color
+      const c1 = canopyColors[i % canopyColors.length]
+      const c2 = canopy2Colors[i % canopy2Colors.length]
+      canopyRef.current?.setColorAt(i, c1)
+      canopy2Ref.current?.setColorAt(i, c2)
     })
     if (trunkRef.current) trunkRef.current.instanceMatrix.needsUpdate = true
-    if (canopyRef.current) canopyRef.current.instanceMatrix.needsUpdate = true
-    if (canopy2Ref.current) canopy2Ref.current.instanceMatrix.needsUpdate = true
+    if (canopyRef.current) {
+      canopyRef.current.instanceMatrix.needsUpdate = true
+      if (canopyRef.current.instanceColor) canopyRef.current.instanceColor.needsUpdate = true
+    }
+    if (canopy2Ref.current) {
+      canopy2Ref.current.instanceMatrix.needsUpdate = true
+      if (canopy2Ref.current.instanceColor) canopy2Ref.current.instanceColor.needsUpdate = true
+    }
   }, [matrices])
 
   return (
@@ -127,14 +153,14 @@ function ForestLayer({
         args={[undefined as never, undefined as never, matrices.length]}
       >
         <icosahedronGeometry args={[1.6, 0]} />
-        <meshStandardMaterial color={canopyColor} roughness={0.85} flatShading />
+        <meshStandardMaterial roughness={0.85} flatShading />
       </instancedMesh>
       <instancedMesh
         ref={canopy2Ref}
         args={[undefined as never, undefined as never, matrices.length]}
       >
         <icosahedronGeometry args={[1.0, 0]} />
-        <meshStandardMaterial color={canopy2Color} roughness={0.85} flatShading />
+        <meshStandardMaterial roughness={0.85} flatShading />
       </instancedMesh>
     </group>
   )
