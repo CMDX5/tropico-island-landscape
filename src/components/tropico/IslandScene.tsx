@@ -124,6 +124,7 @@ export function IslandScene() {
         panSpeed={0.8}
         enableRotate
         rotateSpeed={0.7}
+        enableZoom
         // Middle mouse button = free rotation (Tropico 6 official)
         mouseButtons={{
           LEFT: THREE.MOUSE.PAN,

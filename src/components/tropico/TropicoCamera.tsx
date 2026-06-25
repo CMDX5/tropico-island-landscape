@@ -45,6 +45,7 @@ export function TropicoCamera({ controlsRef, onMenuKey }: Props) {
   const vRot = useRef(0)
   const vTilt = useRef(0)
   const vZoom = useRef(0)
+  const wheelZoom = useRef(0) // accumulated wheel zoom velocity (inertia)
 
   useEffect(() => {
     camRef.current = camera
@@ -68,6 +69,7 @@ export function TropicoCamera({ controlsRef, onMenuKey }: Props) {
   }, [controlsRef])
 
   // track mouse position for edge-scroll + ALT-tilt
+  // + intercept mouse wheel for smooth inertia zoom (Tropico 6 style)
   useEffect(() => {
     const el = gl.domElement
     const onMove = (e: MouseEvent) => {
@@ -79,11 +81,22 @@ export function TropicoCamera({ controlsRef, onMenuKey }: Props) {
     const onLeave = () => {
       mouse.current.inside = false
     }
+    // Custom wheel zoom: smooth inertia + speed proportional to distance
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const delta = -e.deltaY * 0.0015
+      wheelZoom.current += delta
+    }
     el.addEventListener('mousemove', onMove)
     el.addEventListener('mouseleave', onLeave)
+    el.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       el.removeEventListener('mousemove', onMove)
       el.removeEventListener('mouseleave', onLeave)
+      el.removeEventListener('wheel', onWheel)
+      window.removeEventListener('wheel', onWheel)
     }
   }, [gl])
 
@@ -218,13 +231,23 @@ export function TropicoCamera({ controlsRef, onMenuKey }: Props) {
       cam.position.add(move)
     }
 
-    if (Math.abs(vZoom.current) > 1e-4) {
-      const factor = 1 - vZoom.current * dt
+    // --- Zoom (keyboard +/- + mouse wheel with inertia) ---
+    // Merge keyboard zoom + accumulated wheel zoom
+    const totalZoom = vZoom.current + wheelZoom.current
+    // Decay wheel zoom inertia (momentum continues after scrolling stops)
+    wheelZoom.current *= Math.exp(-dt * 4) // exponential decay
+    if (Math.abs(wheelZoom.current) < 0.001) wheelZoom.current = 0
+
+    if (Math.abs(totalZoom) > 1e-4) {
       const p = cam as THREE.PerspectiveCamera
       const dir = p.position.clone().sub(c.target)
+      const curDist = dir.length()
+      // Speed proportional to current distance (faster when far, slower when close)
+      const speedFactor = THREE.MathUtils.clamp(curDist / 300, 0.3, 3.0)
+      const factor = 1 - totalZoom * dt * speedFactor
       const minD = c.minDistance ?? 1
       const maxD = c.maxDistance ?? 1000
-      const nd = THREE.MathUtils.clamp(dir.length() * factor, minD, maxD)
+      const nd = THREE.MathUtils.clamp(curDist * factor, minD, maxD)
       p.position.copy(c.target).addScaledVector(dir.normalize(), nd)
     }
 
