@@ -27,7 +27,6 @@ export function IslandScene() {
   const controlsRef = useRef<OrbitControlsImpl>(null)
   return (
     <Canvas
-      shadows
       dpr={[1, 1]}
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
@@ -45,15 +44,6 @@ export function IslandScene() {
         position={SUN_POSITION}
         intensity={2.8}
         color="#ffe4a8"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-near={1}
-        shadow-camera-far={3200}
-        shadow-camera-left={-2000}
-        shadow-camera-right={2000}
-        shadow-camera-top={2000}
-        shadow-camera-bottom={-2000}
-        shadow-bias={-0.0004}
       />
 
       <Suspense fallback={null}>
@@ -99,8 +89,8 @@ export function IslandScene() {
         <Rivers />
         <Ocean />
         <Buildings />
-        <InstancedForest count={10000} />
-        <Vegetation palmCount={1600} />
+        <InstancedForest count={2500} />
+        <Vegetation palmCount={400} />
         <IslandClouds />
       </Suspense>
 
