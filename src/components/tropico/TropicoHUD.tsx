@@ -259,32 +259,6 @@ export function TropicoHUD() {
       <TimeControls speed={speed} setSpeed={setSpeed} />
       <ActionBar active={active} setActive={setActive} />
 
-      {/* Mini-map (bottom-right, above action bar) */}
-      <div className="pointer-events-none absolute bottom-24 right-3 z-10 sm:bottom-28 sm:right-5">
-        <div className="relative h-32 w-32 overflow-hidden rounded-xl border-2 border-amber-400/60 bg-sky-900/80 shadow-lg backdrop-blur-sm sm:h-36 sm:w-36">
-          {/* Ocean */}
-          <div className="absolute inset-0 bg-gradient-to-b from-sky-700 to-sky-900" />
-          {/* Island (simplified top-down representation) */}
-          <div className="absolute left-1/2 top-1/2 h-20 w-24 -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-gradient-to-b from-emerald-600 to-emerald-800 opacity-90" />
-          {/* Volcano center dot */}
-          <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-600" />
-          {/* Village dots */}
-          {[
-            { x: '70%', y: '35%' }, { x: '30%', y: '55%' },
-            { x: '52%', y: '75%' }, { x: '25%', y: '30%' },
-            { x: '65%', y: '68%' },
-          ].map((v, i) => (
-            <div key={i} className="absolute h-1.5 w-1.5 rounded-full bg-amber-300" style={{ left: v.x, top: v.y }} />
-          ))}
-          {/* Compass N */}
-          <div className="absolute left-1/2 top-1 -translate-x-1/2 text-[8px] font-bold text-white">N</div>
-          {/* Label */}
-          <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1 py-0.5 text-center text-[7px] font-bold uppercase tracking-wider text-amber-200">
-            Carte
-          </div>
-        </div>
-      </div>
-
       {/* Performance mode toggle (top-right) */}
       <div className="pointer-events-auto absolute right-3 top-3 z-20 flex items-center gap-2 sm:right-5 sm:top-5">
         <button

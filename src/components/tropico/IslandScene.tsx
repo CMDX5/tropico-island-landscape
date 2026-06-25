@@ -16,7 +16,6 @@ import { Buildings, VILLAGE_CENTERS } from './Buildings'
 import { InstancedForest } from './InstancedForest'
 import { ArchipelagoView } from './ArchipelagoView'
 import { Villagers } from './Villagers'
-import { Roads, InlandLake, FarmFields, Dock } from './MapFeatures'
 
 const SUN_POSITION: [number, number, number] = [60, 70, -30]
 
@@ -111,12 +110,8 @@ export function IslandScene() {
         </mesh>
         <IslandTerrain />
         <Rivers />
-        <InlandLake />
         <Ocean />
-        <Roads />
-        <FarmFields />
         <Buildings />
-        <Dock />
         <Villagers />
         <InstancedForest count={forestCount} />
         <Vegetation palmCount={palmCount} />
