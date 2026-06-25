@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { scatter, type Placement } from './terrain'
 import { PalmTree } from './PalmTree'
 import { BroadleafTree } from './BroadleafTree'
+import { VILLAGE_CENTERS } from './Buildings'
 
 /* -------------------------------------------------------------------------- */
 /*  Rocks                                                                      */
@@ -82,20 +83,22 @@ function GrassTuft({ p }: { p: Placement }) {
 /* -------------------------------------------------------------------------- */
 
 export function Vegetation({ palmCount = 280 }: { palmCount?: number }) {
+  // keep trees away from the beach villages so houses stay visible
+  const avoid = useMemo(() => VILLAGE_CENTERS.map(([x, z]) => ({ x, z, r: 14 })), [])
   // palm trees on beaches and sandy lowlands
   const palms = useMemo(
-    () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, biome: ['sand', 'plain'] }),
-    [palmCount],
+    () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, biome: ['sand', 'plain'], avoid }),
+    [palmCount, avoid],
   )
   // dense jungle: broadleaf trees saturate the jungle biome (~60% of island)
   const broadleaf = useMemo(
-    () => scatter(900, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'jungle' }),
-    [],
+    () => scatter(900, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'jungle', avoid }),
+    [avoid],
   )
   // bushes scattered on plains, hills and jungle
   const bushes = useMemo(
-    () => scatter(300, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle'] }),
-    [],
+    () => scatter(300, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle'], avoid }),
+    [avoid],
   )
   // rocks scattered on beaches, slopes, mountains and plateaus
   const rocks = useMemo(

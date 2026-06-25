@@ -12,6 +12,7 @@ import { IslandClouds } from './Clouds'
 import { Rivers } from './Rivers'
 import { PostFX } from './PostFX'
 import { TropicoCamera } from './TropicoCamera'
+import { Buildings, VILLAGE_CENTERS } from './Buildings'
 
 const SUN_POSITION: [number, number, number] = [60, 70, -30]
 
@@ -30,7 +31,7 @@ export function IslandScene() {
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
       <color attach="background" args={['#87ceeb']} />
-      <fog attach="fog" args={['#a8d4ec', 1000, 2200]} />
+      <fog attach="fog" args={['#9ec8e8', 700, 1600]} />
 
       {/* Tropico 6 uses a PERSPECTIVE camera (distant objects shrink).
           FOV ~50°, positioned close enough that the island fills the view. */}
@@ -96,6 +97,7 @@ export function IslandScene() {
         <IslandTerrain />
         <Rivers />
         <Ocean />
+        <Buildings />
         <Vegetation palmCount={280} />
         <IslandClouds />
       </Suspense>
