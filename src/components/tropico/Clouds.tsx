@@ -20,7 +20,7 @@ export function IslandClouds() {
         opacity={0.9}
         fade={500}
         speed={0.04}
-        position={[-180, 200, -120]}
+        position={[-600, 650, -400]}
       />
       <Cloud
         seed={4}
@@ -31,7 +31,7 @@ export function IslandClouds() {
         opacity={0.85}
         fade={500}
         speed={0.035}
-        position={[200, 220, 140]}
+        position={[680, 720, 460]}
       />
       <Cloud
         seed={9}
@@ -42,7 +42,7 @@ export function IslandClouds() {
         opacity={0.8}
         fade={520}
         speed={0.05}
-        position={[40, 240, 200]}
+        position={[120, 780, 680]}
       />
       <Cloud
         seed={14}
@@ -53,7 +53,7 @@ export function IslandClouds() {
         opacity={0.78}
         fade={520}
         speed={0.045}
-        position={[-220, 210, 160]}
+        position={[-740, 680, 540]}
       />
       <Cloud
         seed={21}
@@ -64,7 +64,7 @@ export function IslandClouds() {
         opacity={0.72}
         fade={540}
         speed={0.06}
-        position={[240, 230, -160]}
+        position={[820, 740, -540]}
       />
       <Cloud
         seed={28}
@@ -75,7 +75,7 @@ export function IslandClouds() {
         opacity={0.68}
         fade={540}
         speed={0.055}
-        position={[-60, 250, -220]}
+        position={[-200, 820, -740]}
       />
     </Clouds>
   )

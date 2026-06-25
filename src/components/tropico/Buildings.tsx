@@ -93,7 +93,7 @@ function placeVillage(
     if (slope > 0.9) continue
     result.push({
       position: [x, h, z],
-      scale: 1.6 + rand() * 0.6,
+      scale: 4.5 + rand() * 1.5,
       rotation: rand() * Math.PI * 2,
     })
   }
@@ -102,9 +102,9 @@ function placeVillage(
 
 /** Village centers (shared with Vegetation so trees are cleared around houses). */
 export const VILLAGE_CENTERS: Array<[number, number]> = [
-  [120, -70],
-  [-100, 80],
-  [40, 130],
+  [400, -240],
+  [-340, 280],
+  [120, 440],
 ]
 
 /**

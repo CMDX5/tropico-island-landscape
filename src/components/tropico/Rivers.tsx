@@ -105,7 +105,7 @@ export function Rivers() {
   // seeds placed on the volcano rim (~22% of island radius from center)
   // in 4 directions so rivers radiate outward to the sea
   const seeds: Array<[number, number]> = useMemo(() => {
-    const r = 52 // volcano rim distance from center
+    const r = 185 // volcano rim distance from center (ISLAND_RADIUS * 0.22)
     const dirs = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2]
     return dirs.map((a) => [Math.cos(a) * r, Math.sin(a) * r] as [number, number])
   }, [])

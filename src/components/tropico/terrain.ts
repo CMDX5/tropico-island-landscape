@@ -44,8 +44,8 @@ export function fbm(x: number, y: number, octaves = 5): number {
 /*  Island shape                                                               */
 /* -------------------------------------------------------------------------- */
 
-export const ISLAND_SIZE = 620 // world units covered by the terrain grid (much larger)
-export const ISLAND_RADIUS = 260 // radius where the island fades into the sea (much larger)
+export const ISLAND_SIZE = 2000 // world units covered by the terrain grid (huge)
+export const ISLAND_RADIUS = 840 // radius where the island fades into the sea (huge)
 
 /* -------------------------------------------------------------------------- */
 /*  Spatial biome masks (large-scale regions)                                  */

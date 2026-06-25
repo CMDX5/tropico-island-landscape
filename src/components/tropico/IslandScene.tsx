@@ -31,11 +31,11 @@ export function IslandScene() {
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
       <color attach="background" args={['#87ceeb']} />
-      <fog attach="fog" args={['#9ec8e8', 700, 1600]} />
+      <fog attach="fog" args={['#9ec8e8', 2200, 5200]} />
 
       {/* Tropico 6 uses a PERSPECTIVE camera (distant objects shrink).
           FOV ~50°, positioned close enough that the island fills the view. */}
-      <PerspectiveCamera makeDefault position={[280, 200, 280]} fov={55} near={0.5} far={6000} />
+      <PerspectiveCamera makeDefault position={[600, 430, 600]} fov={55} near={0.5} far={12000} />
 
       {/* lighting — warm golden tropical sunlight from the right */}
       <hemisphereLight args={['#ffeec8', '#4a5a3a', 1.1]} />
@@ -47,11 +47,11 @@ export function IslandScene() {
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-camera-near={1}
-        shadow-camera-far={1600}
-        shadow-camera-left={-620}
-        shadow-camera-right={620}
-        shadow-camera-top={620}
-        shadow-camera-bottom={-620}
+        shadow-camera-far={3200}
+        shadow-camera-left={-2000}
+        shadow-camera-right={2000}
+        shadow-camera-top={2000}
+        shadow-camera-bottom={-2000}
         shadow-bias={-0.0004}
       />
 
@@ -60,7 +60,7 @@ export function IslandScene() {
             BackSide so we see its interior. No fog/toneMapping so it stays
             vivid blue. */}
         <mesh renderOrder={-1} frustumCulled={false}>
-          <sphereGeometry args={[1200, 32, 16]} />
+          <sphereGeometry args={[5000, 32, 16]} />
           <shaderMaterial
             side={THREE.BackSide}
             depthWrite={false}
@@ -98,7 +98,7 @@ export function IslandScene() {
         <Rivers />
         <Ocean />
         <Buildings />
-        <Vegetation palmCount={280} />
+        <Vegetation palmCount={900} />
         <IslandClouds />
       </Suspense>
 
@@ -113,8 +113,8 @@ export function IslandScene() {
         // Tropico 6: zoom via distance (perspective), not zoom property
         // Zoom range matches Tropico 6: closest shows buildings clearly,
         // farthest shows the whole island. Not as close as ground level.
-        minDistance={60}
-        maxDistance={520}
+        minDistance={180}
+        maxDistance={1800}
         // Tropico 6 tilt range (from screenshots): ~25° to ~60° from horizontal
         // (polar measured from Y axis: 0=top-down, π/2=horizontal)
         // 25° from horizontal = 65° from vertical = polar 1.13
