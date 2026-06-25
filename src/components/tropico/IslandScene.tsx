@@ -15,6 +15,7 @@ import { TropicoCamera } from './TropicoCamera'
 import { Buildings, VILLAGE_CENTERS } from './Buildings'
 import { InstancedForest } from './InstancedForest'
 import { ArchipelagoView } from './ArchipelagoView'
+import { Villagers } from './Villagers'
 
 const SUN_POSITION: [number, number, number] = [60, 70, -30]
 
@@ -111,6 +112,7 @@ export function IslandScene() {
         <Rivers />
         <Ocean />
         <Buildings />
+        <Villagers />
         <InstancedForest count={forestCount} />
         <Vegetation palmCount={palmCount} />
         {/* Clouds disabled for perf — re-enable on faster machines */}
