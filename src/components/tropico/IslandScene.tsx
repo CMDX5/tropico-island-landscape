@@ -29,20 +29,20 @@ export function IslandScene() {
       dpr={[1, 1]}
       gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'high-performance' }}
     >
-      <color attach="background" args={['#bfe9f2']} />
-      <fog attach="fog" args={['#d4eef5', 1200, 3000]} />
+      <color attach="background" args={['#c8e8ff']} />
+      <fog attach="fog" args={['#e8d8b8', 1400, 3200]} />
 
       {/* Tropico 6 uses a PERSPECTIVE camera (distant objects shrink).
           FOV ~50°, positioned close enough that the island fills the view. */}
       <PerspectiveCamera makeDefault position={[220, 245, 220]} fov={50} near={0.5} far={6000} />
 
-      {/* lighting */}
-      <hemisphereLight args={['#fff4e0', '#4a5a3a', 1.0]} />
-      <ambientLight intensity={0.55} />
+      {/* lighting — warm golden tropical sunlight from the right */}
+      <hemisphereLight args={['#ffeec8', '#4a5a3a', 1.1]} />
+      <ambientLight intensity={0.6} />
       <directionalLight
         position={SUN_POSITION}
-        intensity={2.6}
-        color="#fff3d6"
+        intensity={2.8}
+        color="#ffe4a8"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-camera-near={1}
@@ -63,10 +63,10 @@ export function IslandScene() {
             side={THREE.BackSide}
             depthWrite={false}
             uniforms={{
-              topColor: { value: new THREE.Color('#5fa8d4') },
-              bottomColor: { value: new THREE.Color('#d4eef5') },
+              topColor: { value: new THREE.Color('#1a6bcc') },
+              bottomColor: { value: new THREE.Color('#c8e8ff') },
               offset: { value: 200 },
-              exponent: { value: 0.6 },
+              exponent: { value: 0.7 },
             }}
             vertexShader={`
               varying vec3 vWorldPos;
