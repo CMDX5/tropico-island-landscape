@@ -115,7 +115,7 @@ export function IslandScene() {
         // polar measured from Y: 0=top-down, π/2=horizontal
         // 20° from horizontal = 70° from vertical = polar 1.22
         // 80° from horizontal = 10° from vertical = polar 0.175
-        maxPolarAngle={(70 * Math.PI) / 180}   // 20° from horizontal (lowest view)
+        maxPolarAngle={(75 * Math.PI) / 180}   // 15° from horizontal (max tilt, no clipping)
         minPolarAngle={(10 * Math.PI) / 180}   // 80° from horizontal (near top-down)
         enableDamping
         dampingFactor={0.1}

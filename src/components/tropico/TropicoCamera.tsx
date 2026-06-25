@@ -50,6 +50,23 @@ export function TropicoCamera({ controlsRef, onMenuKey }: Props) {
     camRef.current = camera
   }, [camera])
 
+  // Clamp camera height after mouse interactions (OrbitControls 'change')
+  // so the camera NEVER goes below sea level + 10 (no clipping through terrain)
+  useEffect(() => {
+    const c = controlsRef.current
+    if (!c) return
+    const onChange = () => {
+      const cam = camRef.current
+      if (!cam) return
+      const MIN_CAM_HEIGHT = 10 // sea level (0) + 10
+      if (cam.position.y < MIN_CAM_HEIGHT) {
+        cam.position.y = MIN_CAM_HEIGHT
+      }
+    }
+    c.addEventListener('change', onChange)
+    return () => c.removeEventListener('change', onChange)
+  }, [controlsRef])
+
   // track mouse position for edge-scroll + ALT-tilt
   useEffect(() => {
     const el = gl.domElement
@@ -209,6 +226,14 @@ export function TropicoCamera({ controlsRef, onMenuKey }: Props) {
       const maxD = c.maxDistance ?? 1000
       const nd = THREE.MathUtils.clamp(dir.length() * factor, minD, maxD)
       p.position.copy(c.target).addScaledVector(dir.normalize(), nd)
+    }
+
+    // CLAMP CAMERA HEIGHT: never let the camera go below sea level + 10.
+    // This prevents clipping through the terrain/ocean when zooming in.
+    const SEA_LEVEL = 0
+    const MIN_CAM_HEIGHT = SEA_LEVEL + 10
+    if (cam.position.y < MIN_CAM_HEIGHT) {
+      cam.position.y = MIN_CAM_HEIGHT
     }
 
     c.update()
