@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { scatter, type Placement } from './terrain'
 import { PalmTree } from './PalmTree'
-import { BroadleafTree } from './BroadleafTree'
 import { VILLAGE_CENTERS } from './Buildings'
 
 /* -------------------------------------------------------------------------- */
@@ -82,7 +81,7 @@ function GrassTuft({ p }: { p: Placement }) {
 /*  Vegetation collection                                                      */
 /* -------------------------------------------------------------------------- */
 
-export function Vegetation({ palmCount = 900 }: { palmCount?: number }) {
+export function Vegetation({ palmCount = 1600 }: { palmCount?: number }) {
   // keep trees away from the beach villages so houses stay visible
   const avoid = useMemo(() => VILLAGE_CENTERS.map(([x, z]) => ({ x, z, r: 35 })), [])
   // palm trees on beaches and sandy lowlands
@@ -90,14 +89,10 @@ export function Vegetation({ palmCount = 900 }: { palmCount?: number }) {
     () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, biome: ['sand', 'plain'], avoid }),
     [palmCount, avoid],
   )
-  // dense jungle: broadleaf trees saturate the jungle biome (~60% of island)
-  const broadleaf = useMemo(
-    () => scatter(2500, { minH: 1, maxH: 11, maxSlope: 1.5, seed: 33, minScale: 0.8, maxScale: 1.5, biome: 'jungle', avoid }),
-    [avoid],
-  )
+  // broadleaf trees now rendered via InstancedForest (IslandScene) for density
   // bushes scattered on plains, hills and jungle
   const bushes = useMemo(
-    () => scatter(900, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle'], avoid }),
+    () => scatter(2000, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle'], avoid }),
     [avoid],
   )
   // rocks scattered on beaches, slopes, mountains and plateaus
@@ -107,7 +102,7 @@ export function Vegetation({ palmCount = 900 }: { palmCount?: number }) {
   )
   // beach grass near the shore
   const grass = useMemo(
-    () => scatter(800, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
+    () => scatter(1200, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
     [],
   )
 
@@ -115,9 +110,6 @@ export function Vegetation({ palmCount = 900 }: { palmCount?: number }) {
     <group>
       {palms.map((p, i) => (
         <PalmProxy key={`p${i}`} p={p} index={i} />
-      ))}
-      {broadleaf.map((p, i) => (
-        <BroadleafProxy key={`t${i}`} p={p} index={i} />
       ))}
       {bushes.map((p, i) => (
         <Bush key={`b${i}`} p={p} />
@@ -135,9 +127,4 @@ export function Vegetation({ palmCount = 900 }: { palmCount?: number }) {
 // Wrapper so each palm gets a stable `variant` without re-randomising
 function PalmProxy({ p, index }: { p: Placement; index: number }) {
   return <PalmTree position={p.position} scale={p.scale} rotation={p.rotation} variant={index} />
-}
-
-// Wrapper so each broadleaf gets a stable `variant`
-function BroadleafProxy({ p, index }: { p: Placement; index: number }) {
-  return <BroadleafTree position={p.position} scale={p.scale} rotation={p.rotation} variant={index} />
 }
