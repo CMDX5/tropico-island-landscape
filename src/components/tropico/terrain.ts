@@ -145,7 +145,7 @@ export function islandHeight(x: number, z: number): number {
   const angle = Math.atan2(z, x)
   const radiusNoise = 0.78 + 0.22 * fbm(Math.cos(angle) * 1.5 + 10, Math.sin(angle) * 1.5 + 10, 3)
   const effectiveRadius = ISLAND_RADIUS * radiusNoise
-  const falloff = Math.max(0, 1 - Math.pow(d / effectiveRadius, 1.8))
+  const falloff = Math.max(0, 1 - Math.pow(d / effectiveRadius, 1.5))
   const base = fbm(x * 0.045, z * 0.045, 5)
   // base relief: raised so interior stays above sea level (no blue holes)
   let h = falloff * 3.0 + (base - 0.5) * falloff * 2.0 + 0.2
@@ -174,24 +174,20 @@ export function islandHeight(x: number, z: number): number {
   if (hMask > 0) {
     h += (base - 0.5) * hMask * falloff * 4
   }
-  // CLAMP: inside the island disc, terrain must stay above sea level
-  // (sea level ~0.0; ocean surface at y=-0.25). Raise to +0.8 minimum
-  // so beaches/land read as solid, never as water holes.
-  if (falloff > 0.02 && h < 0.8) {
-    h = 0.8
-  }
-  // BEACH: a clearly visible sandy strip near the coast (falloff 0.05-0.25)
-  // stays low and flat so sand reads as a beach around the whole island.
-  if (falloff > 0.02 && falloff < 0.22 && h < 1.4) {
-    h = 0.8 + falloff * 2.5
+  // BEACH + COASTAL TRANSITION: smooth gradient from beach sand down to
+  // underwater. No hard clamp — the terrain slopes gently into the sea so
+  // the coastline is organic (no stair steps, no blocky edges).
+  if (falloff > 0.0 && falloff < 0.25) {
+    // beach strip: low sandy area that slopes toward the water
+    const beachH = 0.8 + falloff * 3.0
+    if (h < beachH) h = beachH
   }
   // GRADUAL COASTAL DROPOFF: outside the island disc, slope the terrain
-  // down smoothly into the deep so the coastline is smooth (no stair steps).
-  // The further from the island, the deeper it goes.
-  if (falloff <= 0.02) {
-    // smooth interpolation from beach level to deep ocean
-    const t = Math.min(1, (ISLAND_RADIUS * 1.02 - d) / (ISLAND_RADIUS * 0.15) + 1)
-    h = -2 - t * 6 - Math.min(20, Math.max(0, (d - ISLAND_RADIUS) * 0.3))
+  // down smoothly into the deep (continuous curve, no abrupt step).
+  if (falloff <= 0.0) {
+    const distBeyond = d - effectiveRadius
+    // smooth exponential decay into the deep ocean
+    h = 0.5 - distBeyond * 0.15 - Math.min(20, distBeyond * 0.05)
   }
   return h
 }

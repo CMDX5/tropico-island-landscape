@@ -89,9 +89,9 @@ export function Vegetation({ palmCount = 500 }: { palmCount?: number }) {
     () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 1.5, maxScale: 2.5, biome: ['sand', 'plain'], avoid }),
     [palmCount, avoid],
   )
-  // second cluster of palms specifically on sand (denser beaches, bigger)
+  // second cluster of palms specifically on sand — right up to the beach edge
   const beachPalms = useMemo(
-    () => scatter(300, { minH: 0.2, maxH: 2.5, maxSlope: 1.0, seed: 42, minScale: 1.3, maxScale: 2.2, biome: 'sand', avoid }),
+    () => scatter(400, { minH: 0.2, maxH: 2.0, maxSlope: 1.0, seed: 42, minScale: 1.3, maxScale: 2.2, biome: 'sand', avoid }),
     [avoid],
   )
   // broadleaf trees now rendered via InstancedForest (IslandScene) for density

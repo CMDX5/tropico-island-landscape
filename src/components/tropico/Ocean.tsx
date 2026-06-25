@@ -50,8 +50,14 @@ export function Ocean() {
       const x = pos.getX(i)
       const z = pos.getZ(i)
       const h = islandHeight(x, z)
-      // foam ONLY in actual water near the shore (h < 0), never on sand/land
-      foam[i] = h < 0 ? Math.max(0, 1 - (-h) / 1.0) : 0
+      // FOAM: visible where ocean meets beach (h between -2 and +0.8).
+      // Strongest right at the shoreline (h near 0), fades off in deep water
+      // and on dry sand. This creates the white wave edge around the island.
+      if (h > -2 && h < 0.8) {
+        foam[i] = Math.max(0, 1 - Math.abs(h) / 1.5)
+      } else {
+        foam[i] = 0
+      }
       // wave amplitude: 0 where terrain is at/above sea level (beach/land),
       // ramps up quickly offshore so the coast stays rock-solid.
       if (h > -0.5) {
@@ -133,9 +139,10 @@ export function Ocean() {
         .replace(
           '#include <color_fragment>',
           `#include <color_fragment>
-          // discard fragments near the coast so the water surface stays
-          // well off the beach — the sand reads as rigid ground.
-          if (vWaveAmp < 0.15) discard;
+          // Only discard fragments that are on dry land (no foam, no water).
+          // Keep foam fragments (vFoam > 0) so the white wave edge is visible
+          // where the ocean meets the beach.
+          if (vWaveAmp < 0.01 && vFoam < 0.01) discard;
           // 4-zone Tropico 6 gradient: shallow -> mid -> far -> deep
           vec3 waterCol;
           if (vDepth < 0.33) {
@@ -157,7 +164,9 @@ export function Ocean() {
           // Combine: water color + specular + glitter
           diffuseColor.rgb = waterCol + vec3(spec * 2.5) + vec3(glitter * 0.8, glitter * 0.85, glitter * 0.95);
           // Coastal foam: thick white edge where ocean meets beach
-          diffuseColor.rgb = mix(diffuseColor.rgb, uFoamColor, vFoam * 0.95);`,
+          // Coastal foam: thick white wave edge where ocean meets beach
+          // Boosted to 1.0 so foam is fully white and clearly visible
+          diffuseColor.rgb = mix(diffuseColor.rgb, uFoamColor, clamp(vFoam * 1.5, 0.0, 1.0));`,
         )
     }
     return mat
