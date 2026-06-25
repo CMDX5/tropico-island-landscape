@@ -81,28 +81,33 @@ function GrassTuft({ p }: { p: Placement }) {
 /*  Vegetation collection                                                      */
 /* -------------------------------------------------------------------------- */
 
-export function Vegetation({ palmCount = 200 }: { palmCount?: number }) {
+export function Vegetation({ palmCount = 500 }: { palmCount?: number }) {
   // keep trees away from the beach villages so houses stay visible
   const avoid = useMemo(() => VILLAGE_CENTERS.map(([x, z]) => ({ x, z, r: 35 })), [])
-  // palm trees on beaches and sandy lowlands
+  // palm trees on beaches and sandy lowlands (more, bigger, visible on sand)
   const palms = useMemo(
-    () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 0.75, maxScale: 1.35, biome: ['sand', 'plain'], avoid }),
+    () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 1.5, maxScale: 2.5, biome: ['sand', 'plain'], avoid }),
     [palmCount, avoid],
   )
+  // second cluster of palms specifically on sand (denser beaches, bigger)
+  const beachPalms = useMemo(
+    () => scatter(300, { minH: 0.2, maxH: 2.5, maxSlope: 1.0, seed: 42, minScale: 1.3, maxScale: 2.2, biome: 'sand', avoid }),
+    [avoid],
+  )
   // broadleaf trees now rendered via InstancedForest (IslandScene) for density
-  // bushes scattered on plains, hills and jungle
+  // bushes scattered on plains, hills, jungle AND sand (variety)
   const bushes = useMemo(
-    () => scatter(300, { minH: 1, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle'], avoid }),
+    () => scatter(500, { minH: 0.5, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle', 'sand'], avoid }),
     [avoid],
   )
   // rocks scattered on beaches, slopes, mountains and plateaus
   const rocks = useMemo(
-    () => scatter(80, { minH: -0.5, maxH: 52, maxSlope: 2.8, seed: 99, minScale: 0.6, maxScale: 2.4, biome: ['sand', 'mountain', 'hill', 'plateau'] }),
+    () => scatter(120, { minH: -0.5, maxH: 52, maxSlope: 2.8, seed: 99, minScale: 0.6, maxScale: 2.4, biome: ['sand', 'mountain', 'hill', 'plateau'] }),
     [],
   )
-  // beach grass near the shore
+  // beach grass near the shore (more)
   const grass = useMemo(
-    () => scatter(200, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
+    () => scatter(400, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
     [],
   )
 
@@ -110,6 +115,9 @@ export function Vegetation({ palmCount = 200 }: { palmCount?: number }) {
     <group>
       {palms.map((p, i) => (
         <PalmProxy key={`p${i}`} p={p} index={i} />
+      ))}
+      {beachPalms.map((p, i) => (
+        <PalmProxy key={`bp${i}`} p={p} index={i + 1000} />
       ))}
       {bushes.map((p, i) => (
         <Bush key={`b${i}`} p={p} />

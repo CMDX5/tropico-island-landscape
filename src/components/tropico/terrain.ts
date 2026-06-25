@@ -185,13 +185,13 @@ export function islandHeight(x: number, z: number): number {
   if (falloff > 0.02 && falloff < 0.22 && h < 1.4) {
     h = 0.8 + falloff * 2.5
   }
-  // STEEP COASTAL DROPOFF: outside the island disc, plunge the terrain
-  // deep underwater so the ocean covers it directly (no flat sandy plateau).
+  // GRADUAL COASTAL DROPOFF: outside the island disc, slope the terrain
+  // down smoothly into the deep so the coastline is smooth (no stair steps).
   // The further from the island, the deeper it goes.
   if (falloff <= 0.02) {
-    // beyond the island: drop to -8 (well below the ocean surface at -0.25)
-    // so the discard shader hides it and the ocean renders on top.
-    h = -8 - Math.min(20, Math.max(0, (d - ISLAND_RADIUS) * 0.3))
+    // smooth interpolation from beach level to deep ocean
+    const t = Math.min(1, (ISLAND_RADIUS * 1.02 - d) / (ISLAND_RADIUS * 0.15) + 1)
+    h = -2 - t * 6 - Math.min(20, Math.max(0, (d - ISLAND_RADIUS) * 0.3))
   }
   return h
 }
