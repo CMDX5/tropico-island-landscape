@@ -22,6 +22,7 @@ import {
   Users,
   Star,
   Gauge,
+  Satellite,
 } from 'lucide-react'
 
 /* -------------------------------------------------------------------------- */
@@ -213,6 +214,7 @@ export function TropicoHUD() {
   const [active, setActive] = useState<string | null>(null)
   const [speed, setSpeed] = useState<string>('1x')
   const [perfMode, setPerfMode] = useState<boolean>(true) // default: performance ON
+  const [archipelagoMode, setArchipelagoMode] = useState<boolean>(false)
 
   // Tropico 6 keyboard shortcuts: menus (1-9,0,-), pause (P), space (archipel)
   useEffect(() => {
@@ -246,6 +248,11 @@ export function TropicoHUD() {
     window.dispatchEvent(new CustomEvent('tropico-perf-mode', { detail: perfMode }))
   }, [perfMode])
 
+  // Broadcast archipelago mode to the 3D scene
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('tropico-archipelago-mode', { detail: archipelagoMode }))
+  }, [archipelagoMode])
+
   return (
     <>
       <TopLeftStats />
@@ -253,18 +260,32 @@ export function TropicoHUD() {
       <ActionBar active={active} setActive={setActive} />
 
       {/* Performance mode toggle (top-right) */}
-      <button
-        onClick={() => setPerfMode((v) => !v)}
-        title={perfMode ? 'Mode Performance (ON) — cliquez pour la Qualité' : 'Mode Qualité (ON) — cliquez pour la Performance'}
-        className={`pointer-events-auto absolute right-3 top-3 z-20 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold backdrop-blur-md transition-colors sm:right-5 sm:top-5 ${
-          perfMode
-            ? 'bg-emerald-700/90 text-amber-50'
-            : 'bg-amber-500/90 text-emerald-950'
-        }`}
-      >
-        <Gauge className="h-4 w-4" />
-        {perfMode ? 'PERF' : 'QUALITÉ'}
-      </button>
+      <div className="pointer-events-auto absolute right-3 top-3 z-20 flex items-center gap-2 sm:right-5 sm:top-5">
+        <button
+          onClick={() => setArchipelagoMode((v) => !v)}
+          title={archipelagoMode ? 'Vue archipelago (ON) — cliquez pour vue normale' : 'Vue normale — cliquez pour vue archipelago satellite'}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold backdrop-blur-md transition-colors ${
+            archipelagoMode
+              ? 'bg-sky-600/90 text-white'
+              : 'bg-black/50 text-amber-100/70'
+          }`}
+        >
+          <Satellite className="h-4 w-4" />
+          {archipelagoMode ? 'SATELLITE' : 'ARCHIPEL'}
+        </button>
+        <button
+          onClick={() => setPerfMode((v) => !v)}
+          title={perfMode ? 'Mode Performance (ON) — cliquez pour la Qualité' : 'Mode Qualité (ON) — cliquez pour la Performance'}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold backdrop-blur-md transition-colors ${
+            perfMode
+              ? 'bg-emerald-700/90 text-amber-50'
+              : 'bg-amber-500/90 text-emerald-950'
+          }`}
+        >
+          <Gauge className="h-4 w-4" />
+          {perfMode ? 'PERF' : 'QUALITÉ'}
+        </button>
+      </div>
     </>
   )
 }

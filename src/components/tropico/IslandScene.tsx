@@ -14,6 +14,7 @@ import { PostFX } from './PostFX'
 import { TropicoCamera } from './TropicoCamera'
 import { Buildings, VILLAGE_CENTERS } from './Buildings'
 import { InstancedForest } from './InstancedForest'
+import { ArchipelagoView } from './ArchipelagoView'
 
 const SUN_POSITION: [number, number, number] = [60, 70, -30]
 
@@ -26,12 +27,20 @@ const SUN_POSITION: [number, number, number] = [60, 70, -30]
 export function IslandScene() {
   const controlsRef = useRef<OrbitControlsImpl>(null)
   const [perfMode, setPerfMode] = useState(true)
+  const [archipelagoMode, setArchipelagoMode] = useState(false)
 
   // Listen for perf mode toggle from the HUD
   useEffect(() => {
     const onPerf = (e: Event) => setPerfMode((e as CustomEvent).detail as boolean)
     window.addEventListener('tropico-perf-mode', onPerf)
     return () => window.removeEventListener('tropico-perf-mode', onPerf)
+  }, [])
+
+  // Listen for archipelago mode toggle from the HUD
+  useEffect(() => {
+    const onArch = (e: Event) => setArchipelagoMode((e as CustomEvent).detail as boolean)
+    window.addEventListener('tropico-archipelago-mode', onArch)
+    return () => window.removeEventListener('tropico-archipelago-mode', onArch)
   }, [])
 
   // Performance mode: fewer trees, lower dpr; Quality mode: more trees
@@ -137,6 +146,9 @@ export function IslandScene() {
 
       {/* Tropico 6-style keyboard controls (WASD / Q-E / ALT-tilt / PgUp reset) */}
       <TropicoCamera controlsRef={controlsRef} onMenuKey={() => {}} />
+
+      {/* Archipelago satellite view — auto at max zoom-out or HUD button */}
+      <ArchipelagoView controlsRef={controlsRef} forcedArchipelago={archipelagoMode} />
 
       <AdaptiveDpr pixelated />
     </Canvas>
