@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Pause,
   Play,
@@ -98,14 +98,13 @@ function TopLeftStats() {
 /* -------------------------------------------------------------------------- */
 
 const SPEEDS = [
-  { id: 'pause', icon: Pause, label: 'Pause' },
+  { id: 'pause', icon: Pause, label: 'Pause (P)' },
   { id: '1x', icon: Play, label: 'Vitesse normale' },
   { id: '2x', icon: FastForward, label: 'Accélération x2' },
   { id: '3x', icon: ChevronsRight, label: 'Accélération x3' },
 ] as const
 
-function TimeControls() {
-  const [speed, setSpeed] = useState<string>('1x')
+function TimeControls({ speed, setSpeed }: { speed: string; setSpeed: (s: string) => void }) {
   return (
     <div className="pointer-events-auto absolute bottom-16 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/60 p-1 shadow-lg backdrop-blur-md sm:bottom-20">
       {SPEEDS.map((s) => {
@@ -128,7 +127,7 @@ function TimeControls() {
       })}
       <div className="mx-1 h-6 w-px bg-white/20" />
       <button
-        title="Vue archipel"
+        title="Vue archipel (Espace)"
         className="flex h-9 w-9 items-center justify-center rounded-full text-amber-100/70 transition-colors hover:bg-white/10 hover:text-amber-50"
       >
         <MapIcon className="h-4 w-4" />
@@ -148,21 +147,20 @@ function TimeControls() {
 /* -------------------------------------------------------------------------- */
 
 const ACTIONS = [
-  { id: 'tasks', icon: ScrollText, label: 'Tâches' },
-  { id: 'build', icon: Hammer, label: 'Construction' },
-  { id: 'almanac', icon: BookOpen, label: 'Almanach' },
-  { id: 'overlays', icon: Layers, label: 'Calques' },
-  { id: 'edicts', icon: ScrollText, label: 'Décrets' },
-  { id: 'research', icon: FlaskConical, label: 'Recherche' },
-  { id: 'raids', icon: Skull, label: 'Raids' },
-  { id: 'trade', icon: Ship, label: 'Commerce' },
-  { id: 'constitution', icon: FileText, label: 'Constitution' },
-  { id: 'politics', icon: Globe, label: 'Politique' },
-  { id: 'broker', icon: Landmark, label: 'Banquier' },
+  { id: 'tasks', icon: ScrollText, label: 'Tâches', key: '1' },
+  { id: 'build', icon: Hammer, label: 'Construction', key: '2' },
+  { id: 'almanac', icon: BookOpen, label: 'Almanach', key: '3' },
+  { id: 'overlays', icon: Layers, label: 'Calques', key: '4' },
+  { id: 'edicts', icon: ScrollText, label: 'Décrets', key: '5' },
+  { id: 'research', icon: FlaskConical, label: 'Recherche', key: '6' },
+  { id: 'raids', icon: Skull, label: 'Raids', key: '7' },
+  { id: 'trade', icon: Ship, label: 'Commerce', key: '8' },
+  { id: 'constitution', icon: FileText, label: 'Constitution', key: '9' },
+  { id: 'politics', icon: Globe, label: 'Politique', key: '0' },
+  { id: 'broker', icon: Landmark, label: 'Banquier', key: '-' },
 ] as const
 
-function ActionBar() {
-  const [active, setActive] = useState<string | null>(null)
+function ActionBar({ active, setActive }: { active: string | null; setActive: (s: string | null) => void }) {
   return (
     <div className="pointer-events-auto absolute bottom-0 left-0 right-0 z-20">
       <div className="mx-auto flex max-w-3xl items-center gap-0.5 overflow-x-auto rounded-t-xl bg-gradient-to-r from-emerald-950/95 via-emerald-900/95 to-emerald-950/95 px-2 py-1.5 shadow-2xl backdrop-blur-md sm:gap-1 sm:px-3">
@@ -173,7 +171,7 @@ function ActionBar() {
             <button
               key={a.id}
               onClick={() => setActive(isActive ? null : a.id)}
-              title={a.label}
+              title={`${a.label} (${a.key})`}
               className={`flex min-w-[52px] flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 transition-colors sm:min-w-[64px] ${
                 isActive
                   ? 'bg-amber-500/90 text-emerald-950'
@@ -182,6 +180,7 @@ function ActionBar() {
             >
               <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="text-[8px] font-medium uppercase tracking-wide sm:text-[9px]">{a.label}</span>
+              <span className="text-[7px] font-mono text-amber-300/50">{a.key}</span>
             </button>
           )
         })}
@@ -191,15 +190,59 @@ function ActionBar() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Main HUD                                                                   */
+/*  Main HUD — holds shared state (active menu, speed) + keyboard shortcuts   */
 /* -------------------------------------------------------------------------- */
 
+// Map keyboard codes to action ids
+const KEY_TO_ACTION: Record<string, string> = {
+  Digit1: 'tasks',
+  Digit2: 'build',
+  Digit3: 'almanac',
+  Digit4: 'overlays',
+  Digit5: 'edicts',
+  Digit6: 'research',
+  Digit7: 'raids',
+  Digit8: 'trade',
+  Digit9: 'constitution',
+  Digit0: 'politics',
+  Minus: 'broker',
+}
+
 export function TropicoHUD() {
+  const [active, setActive] = useState<string | null>(null)
+  const [speed, setSpeed] = useState<string>('1x')
+
+  // Tropico 6 keyboard shortcuts: menus (1-9,0,-), pause (P), space (archipel)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // Menu shortcuts
+      if (KEY_TO_ACTION[e.code]) {
+        e.preventDefault()
+        const id = KEY_TO_ACTION[e.code]
+        setActive((cur) => (cur === id ? null : id))
+        return
+      }
+      // P = pause toggle
+      if (e.code === 'KeyP') {
+        e.preventDefault()
+        setSpeed((s) => (s === 'pause' ? '1x' : 'pause'))
+        return
+      }
+      // Space = archipel view (toggle off active menu)
+      if (e.code === 'Space') {
+        e.preventDefault()
+        setActive(null)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   return (
     <>
       <TopLeftStats />
-      <TimeControls />
-      <ActionBar />
+      <TimeControls speed={speed} setSpeed={setSpeed} />
+      <ActionBar active={active} setActive={setActive} />
     </>
   )
 }

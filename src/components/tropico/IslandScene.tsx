@@ -102,24 +102,28 @@ export function IslandScene() {
         panSpeed={0.8}
         enableRotate
         rotateSpeed={0.7}
-        // Tropico 6: zoom via distance (perspective), not zoom property
-        // Zoom range matches Tropico 6: closest shows buildings clearly,
-        // farthest shows the whole island. Not as close as ground level.
-        minDistance={180}
-        maxDistance={1800}
-        // Tropico 6 tilt range (from screenshots): ~25° to ~60° from horizontal
-        // (polar measured from Y axis: 0=top-down, π/2=horizontal)
-        // 25° from horizontal = 65° from vertical = polar 1.13
-        // 60° from horizontal = 30° from vertical = polar 0.52
-        maxPolarAngle={Math.PI / 2.8}      // ~64° from vertical (low/raking view when zoomed in)
-        minPolarAngle={Math.PI / 6}        // ~30° from vertical (high aerial when zoomed out)
+        // Middle mouse button = free rotation (Tropico 6 official)
+        mouseButtons={{
+          LEFT: THREE.MOUSE.PAN,
+          MIDDLE: THREE.MOUSE.ROTATE,
+          RIGHT: THREE.MOUSE.PAN,
+        }}
+        // Tropico 6 official zoom bounds: 25 (close) to 560 (full island)
+        minDistance={25}
+        maxDistance={560}
+        // Tropico 6 tilt: 20° (near flat) to 80° (near top-down) from horizontal
+        // polar measured from Y: 0=top-down, π/2=horizontal
+        // 20° from horizontal = 70° from vertical = polar 1.22
+        // 80° from horizontal = 10° from vertical = polar 0.175
+        maxPolarAngle={(70 * Math.PI) / 180}   // 20° from horizontal (lowest view)
+        minPolarAngle={(10 * Math.PI) / 180}   // 80° from horizontal (near top-down)
         enableDamping
         dampingFactor={0.1}
         target={[0, 20, 0]}
       />
 
-      {/* Tropico 6-style keyboard controls (WASD / Q-E / R-F / +-) */}
-      <TropicoCamera controlsRef={controlsRef} />
+      {/* Tropico 6-style keyboard controls (WASD / Q-E / ALT-tilt / PgUp reset) */}
+      <TropicoCamera controlsRef={controlsRef} onMenuKey={() => {}} />
 
       <AdaptiveDpr pixelated />
     </Canvas>
