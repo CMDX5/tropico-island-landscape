@@ -119,21 +119,21 @@ function ForestLayer({
         ref={trunkRef}
         args={[undefined as never, undefined as never, matrices.length]}
       >
-        <cylinderGeometry args={[0.18 * trunkScale, 0.28 * trunkScale, 3.0 * trunkScale, 6]} />
+        <cylinderGeometry args={[0.18 * trunkScale, 0.28 * trunkScale, 3.0 * trunkScale, 5]} />
         <meshStandardMaterial color="#6e4f2c" roughness={0.95} flatShading />
       </instancedMesh>
       <instancedMesh
         ref={canopyRef}
         args={[undefined as never, undefined as never, matrices.length]}
       >
-        <icosahedronGeometry args={[1.6, 1]} />
+        <icosahedronGeometry args={[1.6, 0]} />
         <meshStandardMaterial color={canopyColor} roughness={0.85} flatShading />
       </instancedMesh>
       <instancedMesh
         ref={canopy2Ref}
         args={[undefined as never, undefined as never, matrices.length]}
       >
-        <icosahedronGeometry args={[1.0, 1]} />
+        <icosahedronGeometry args={[1.0, 0]} />
         <meshStandardMaterial color={canopy2Color} roughness={0.85} flatShading />
       </instancedMesh>
     </group>

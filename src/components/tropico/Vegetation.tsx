@@ -81,7 +81,7 @@ function GrassTuft({ p }: { p: Placement }) {
 /*  Vegetation collection                                                      */
 /* -------------------------------------------------------------------------- */
 
-export function Vegetation({ palmCount = 300 }: { palmCount?: number }) {
+export function Vegetation({ palmCount = 150 }: { palmCount?: number }) {
   // keep trees away from the beach villages so houses stay visible
   const avoid = useMemo(() => VILLAGE_CENTERS.map(([x, z]) => ({ x, z, r: 35 })), [])
   // palm trees on beaches and forest edges (tall, curved — 2 meshes only)
@@ -91,23 +91,23 @@ export function Vegetation({ palmCount = 300 }: { palmCount?: number }) {
   )
   // second cluster of palms specifically on sand — right up to the beach edge
   const beachPalms = useMemo(
-    () => scatter(200, { minH: 0.2, maxH: 2.0, maxSlope: 1.0, seed: 42, minScale: 2.0, maxScale: 3.5, biome: 'sand', avoid }),
+    () => scatter(100, { minH: 0.2, maxH: 2.0, maxSlope: 1.0, seed: 42, minScale: 2.0, maxScale: 3.5, biome: 'sand', avoid }),
     [avoid],
   )
   // broadleaf trees now rendered via InstancedForest (IslandScene) for density
   // bushes + shrubs: small green-yellow fillers between trees (Tropico 6 style)
   const bushes = useMemo(
-    () => scatter(400, { minH: 0.5, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.8, maxScale: 1.6, biome: ['plain', 'hill', 'jungle', 'sand'], avoid }),
+    () => scatter(200, { minH: 0.5, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.8, maxScale: 1.6, biome: ['plain', 'hill', 'jungle', 'sand'], avoid }),
     [avoid],
   )
   // rocks scattered on beaches, slopes, mountains and plateaus
   const rocks = useMemo(
-    () => scatter(120, { minH: -0.5, maxH: 52, maxSlope: 2.8, seed: 99, minScale: 0.6, maxScale: 2.4, biome: ['sand', 'mountain', 'hill', 'plateau'] }),
+    () => scatter(60, { minH: -0.5, maxH: 52, maxSlope: 2.8, seed: 99, minScale: 0.6, maxScale: 2.4, biome: ['sand', 'mountain', 'hill', 'plateau'] }),
     [],
   )
   // beach grass near the shore (more)
   const grass = useMemo(
-    () => scatter(400, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
+    () => scatter(100, { minH: 0.2, maxH: 1.6, maxSlope: 1.0, seed: 5, minScale: 0.7, maxScale: 1.3, biome: 'sand' }),
     [],
   )
 

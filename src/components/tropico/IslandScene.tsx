@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useRef } from 'react'
+import { Suspense, useRef, useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, AdaptiveDpr, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
@@ -25,9 +25,22 @@ const SUN_POSITION: [number, number, number] = [60, 70, -30]
  */
 export function IslandScene() {
   const controlsRef = useRef<OrbitControlsImpl>(null)
+  const [perfMode, setPerfMode] = useState(true)
+
+  // Listen for perf mode toggle from the HUD
+  useEffect(() => {
+    const onPerf = (e: Event) => setPerfMode((e as CustomEvent).detail as boolean)
+    window.addEventListener('tropico-perf-mode', onPerf)
+    return () => window.removeEventListener('tropico-perf-mode', onPerf)
+  }, [])
+
+  // Performance mode: fewer trees, lower dpr; Quality mode: more trees
+  const forestCount = perfMode ? 800 : 2000
+  const palmCount = perfMode ? 150 : 400
+
   return (
     <Canvas
-      dpr={[1, 1]}
+      dpr={perfMode ? [0.7, 1] : [1, 1.5]}
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
       <color attach="background" args={['#87ceeb']} />
@@ -89,8 +102,8 @@ export function IslandScene() {
         <Rivers />
         <Ocean />
         <Buildings />
-        <InstancedForest count={2000} />
-        <Vegetation palmCount={300} />
+        <InstancedForest count={forestCount} />
+        <Vegetation palmCount={palmCount} />
         {/* Clouds disabled for perf — re-enable on faster machines */}
       </Suspense>
 
