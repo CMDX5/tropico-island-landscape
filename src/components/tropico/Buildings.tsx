@@ -5,11 +5,29 @@ import * as THREE from 'three'
 import { islandHeight, scatter, type Placement } from './terrain'
 
 /* -------------------------------------------------------------------------- */
-/*  Caribbean house                                                            */
+/*  Tropico 6-style village houses                                            */
 /* -------------------------------------------------------------------------- */
 
-const WALL_COLORS = ['#ff8fa3', '#ffd166', '#06d6a0', '#ff9f1c', '#73d2de', '#ef476f']
-const ROOF_COLORS = ['#b23a48', '#7a4419', '#1d6b6b', '#8a2c0a', '#2a6f97', '#7a1c40']
+// Vibrant Caribbean wall colors (faded/worn look)
+const WALL_COLORS = [
+  '#3a8a8a', // teal
+  '#8a4a6a', // purple/magenta
+  '#c4a030', // yellow ochre
+  '#8a3a2a', // red brick
+  '#4a6a8a', // blue
+  '#6a8a4a', // green
+  '#a08040', // brown/tan
+  '#7a5a3a', // dark wood
+]
+// Roof colors: corrugated metal, thatch, tile
+const ROOF_COLORS = [
+  '#5a5a5a', // corrugated gray metal
+  '#7a4a2a', // rust metal
+  '#9a8040', // thatch/straw
+  '#8a3a2a', // red tile
+  '#4a6a5a', // green metal
+  '#3a3a3a', // dark metal
+]
 
 type HouseProps = {
   position: [number, number, number]
@@ -19,51 +37,59 @@ type HouseProps = {
 }
 
 /**
- * A small colorful Caribbean-style house: concrete base, painted walls,
- * a steep pyramidal terracotta roof, a door and windows. Flat-shaded
- * to match the toon terrain.
+ * Tropico 6-style village house:
+ *  - Small rectangular box (shack/cottage)
+ *  - Roof: flat corrugated metal OR gabled thatch/tile (alternates)
+ *  - Vibrant faded wall colors
+ *  - Small door + window
+ *  - Weathered, compact, Caribbean look
+ * 3-4 meshes per house for performance.
  */
-export function CaribbeanHouse({ position, rotation = 0, variant = 0, scale = 1 }: HouseProps) {
+export function TropicoHouse({ position, rotation = 0, variant = 0, scale = 1 }: HouseProps) {
   const wall = WALL_COLORS[variant % WALL_COLORS.length]
   const roof = ROOF_COLORS[variant % ROOF_COLORS.length]
+  const isGabled = variant % 3 === 0 // 1/3 have gabled roofs, rest flat
 
   return (
     <group position={position} rotation={[0, rotation, 0]} scale={scale}>
-      {/* concrete plinth */}
-      <mesh position={[0, 0.15, 0]} receiveShadow>
-        <boxGeometry args={[2.4, 0.3, 2.4]} />
-        <meshStandardMaterial color="#d9d2c5" roughness={1} flatShading />
+      {/* concrete/plinth base */}
+      <mesh position={[0, 0.1, 0]}>
+        <boxGeometry args={[2.6, 0.2, 2.0]} />
+        <meshStandardMaterial color="#b8a890" roughness={1} flatShading />
       </mesh>
-      {/* walls */}
-      <mesh position={[0, 1.1, 0]} receiveShadow>
-        <boxGeometry args={[2.0, 1.6, 2.0]} />
-        <meshStandardMaterial color={wall} roughness={0.85} flatShading />
+      {/* walls — small rectangular box */}
+      <mesh position={[0, 0.9, 0]}>
+        <boxGeometry args={[2.2, 1.4, 1.8]} />
+        <meshStandardMaterial color={wall} roughness={0.9} flatShading />
       </mesh>
-      {/* pyramidal roof */}
-      <mesh position={[0, 2.5, 0]} receiveShadow>
-        <coneGeometry args={[1.7, 1.2, 4]} />
-        <meshStandardMaterial color={roof} roughness={0.8} flatShading />
-      </mesh>
+      {/* roof — either flat corrugated or gabled */}
+      {isGabled ? (
+        <mesh position={[0, 1.9, 0]} rotation={[0, Math.PI / 4, 0]}>
+          <coneGeometry args={[1.8, 1.0, 4]} />
+          <meshStandardMaterial color={roof} roughness={0.85} flatShading />
+        </mesh>
+      ) : (
+        <mesh position={[0, 1.7, 0]}>
+          <boxGeometry args={[2.4, 0.25, 2.0]} />
+          <meshStandardMaterial color={roof} roughness={0.85} flatShading />
+        </mesh>
+      )}
       {/* door */}
-      <mesh position={[0, 0.7, 1.01]}>
-        <boxGeometry args={[0.5, 0.9, 0.05]} />
+      <mesh position={[0, 0.55, 0.91]}>
+        <boxGeometry args={[0.45, 0.8, 0.05]} />
         <meshStandardMaterial color="#3a2418" roughness={0.9} />
       </mesh>
-      {/* windows (front) */}
-      <mesh position={[-0.6, 1.2, 1.01]}>
-        <boxGeometry args={[0.4, 0.4, 0.05]} />
-        <meshStandardMaterial color="#bfe9f2" roughness={0.3} metalness={0.2} />
-      </mesh>
-      <mesh position={[0.6, 1.2, 1.01]}>
-        <boxGeometry args={[0.4, 0.4, 0.05]} />
-        <meshStandardMaterial color="#bfe9f2" roughness={0.3} metalness={0.2} />
+      {/* window */}
+      <mesh position={[-0.6, 0.9, 0.91]}>
+        <boxGeometry args={[0.35, 0.35, 0.05]} />
+        <meshStandardMaterial color="#a8d0e0" roughness={0.3} metalness={0.2} />
       </mesh>
     </group>
   )
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Village placement                                                          */
+/*  Village placement — 50 houses across multiple villages                    */
 /* -------------------------------------------------------------------------- */
 
 function placeVillage(
@@ -81,41 +107,44 @@ function placeVillage(
   while (result.length < count && attempts < count * 40) {
     attempts++
     const ang = rand() * Math.PI * 2
-    const r = 2 + rand() * 9
+    const r = 3 + rand() * 18
     const x = center[0] + Math.cos(ang) * r
     const z = center[1] + Math.sin(ang) * r
     const h = islandHeight(x, z)
-    // sit right on the beach sand, clearly visible from above
-    if (h < 0.8 || h > 1.8) continue
+    if (h < 0.8 || h > 3.0) continue
     const hx = islandHeight(x + 0.8, z)
     const hz = islandHeight(x, z + 0.8)
     const slope = Math.abs(hx - h) + Math.abs(hz - h)
     if (slope > 0.9) continue
     result.push({
       position: [x, h, z],
-      scale: 4.5 + rand() * 1.5,
+      scale: 2.5 + rand() * 1.5,
       rotation: rand() * Math.PI * 2,
     })
   }
   return result
 }
 
-/** Village centers (shared with Vegetation so trees are cleared around houses). */
+/** Village centers spread around the island coast */
 export const VILLAGE_CENTERS: Array<[number, number]> = [
   [400, -240],
   [-340, 280],
   [120, 440],
+  [-440, -180],
+  [320, 380],
 ]
 
 /**
- * Three small Caribbean villages dotted along the beaches.
+ * Multiple villages with ~50 houses total spread around the island.
  */
 export function Buildings() {
   const villages = useMemo(
     () => [
-      placeVillage(VILLAGE_CENTERS[0], 7, 142),
-      placeVillage(VILLAGE_CENTERS[1], 6, 311),
-      placeVillage(VILLAGE_CENTERS[2], 5, 489),
+      placeVillage(VILLAGE_CENTERS[0], 12, 142),
+      placeVillage(VILLAGE_CENTERS[1], 10, 311),
+      placeVillage(VILLAGE_CENTERS[2], 10, 489),
+      placeVillage(VILLAGE_CENTERS[3], 9, 627),
+      placeVillage(VILLAGE_CENTERS[4], 9, 753),
     ],
     [],
   )
@@ -124,7 +153,7 @@ export function Buildings() {
     <group>
       {villages.flatMap((v, vi) =>
         v.map((p, i) => (
-          <CaribbeanHouse
+          <TropicoHouse
             key={`h${vi}-${i}`}
             position={p.position}
             scale={p.scale}
