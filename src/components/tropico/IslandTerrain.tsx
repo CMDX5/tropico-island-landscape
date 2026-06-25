@@ -26,7 +26,7 @@ export function IslandTerrain() {
   }, [])
 
   const geometry = useMemo(() => {
-    const seg = 140
+    const seg = 280
     const half = ISLAND_SIZE / 2
     const step = ISLAND_SIZE / seg
     const positions: number[] = []

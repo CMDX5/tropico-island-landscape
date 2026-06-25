@@ -145,7 +145,7 @@ export function islandHeight(x: number, z: number): number {
   const angle = Math.atan2(z, x)
   const radiusNoise = 0.78 + 0.22 * fbm(Math.cos(angle) * 1.5 + 10, Math.sin(angle) * 1.5 + 10, 3)
   const effectiveRadius = ISLAND_RADIUS * radiusNoise
-  const falloff = Math.max(0, 1 - Math.pow(d / effectiveRadius, 2.3))
+  const falloff = Math.max(0, 1 - Math.pow(d / effectiveRadius, 1.8))
   const base = fbm(x * 0.045, z * 0.045, 5)
   // base relief: raised so interior stays above sea level (no blue holes)
   let h = falloff * 3.0 + (base - 0.5) * falloff * 2.0 + 0.2
