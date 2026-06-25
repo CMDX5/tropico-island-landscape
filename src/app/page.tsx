@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { TropicoHUD } from '@/components/tropico/TropicoHUD'
+import { AmbientSound } from '@/components/tropico/AmbientSound'
 
 const IslandScene = dynamic(() => import('@/components/tropico/IslandScene').then((m) => m.IslandScene), {
   ssr: false,
@@ -23,6 +24,9 @@ export default function Home() {
 
       {/* Tropico 6-style HUD overlay (stats, time controls, action bar) */}
       <TropicoHUD />
+
+      {/* Tropical ambient sounds (waves, birds, wind, insects) */}
+      <AmbientSound />
     </div>
   )
 }
