@@ -89,9 +89,9 @@ export function IslandScene() {
         <Rivers />
         <Ocean />
         <Buildings />
-        <InstancedForest count={2500} />
-        <Vegetation palmCount={400} />
-        <IslandClouds />
+        <InstancedForest count={1200} />
+        <Vegetation palmCount={200} />
+        {/* Clouds disabled for perf — re-enable on faster machines */}
       </Suspense>
 
       {/* PostFX disabled — was forcing tone mapping that turned the sky teal */}

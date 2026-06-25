@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { islandHeight, ISLAND_RADIUS } from './terrain'
 
 const SIZE = 8000
-const SEGMENTS = 60
+const SEGMENTS = 30
 
 /**
  * Animated tropical ocean with:
