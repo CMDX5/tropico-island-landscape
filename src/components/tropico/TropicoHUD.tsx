@@ -232,10 +232,10 @@ export function TropicoHUD() {
         setSpeed((s) => (s === 'pause' ? '1x' : 'pause'))
         return
       }
-      // Space = archipel view (toggle off active menu)
+      // Space = archipelago view toggle (handled by ArchipelagoView in 3D scene)
       if (e.code === 'Space') {
         e.preventDefault()
-        setActive(null)
+        setArchipelagoMode((v) => !v)
       }
     }
     window.addEventListener('keydown', onKey)
