@@ -20,7 +20,7 @@ export function PostFX() {
         mipmapBlur
         kernelSize={KernelSize.LARGE}
       />
-      <Vignette offset={0.3} darkness={0.35} />
+      <Vignette offset={0.3} darkness={0.15} />
       <SMAA />
     </EffectComposer>
   )

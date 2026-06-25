@@ -27,14 +27,14 @@ export function IslandScene() {
     <Canvas
       shadows
       dpr={[1, 1]}
-      gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'high-performance' }}
+      gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
       <color attach="background" args={['#87ceeb']} />
-      <fog attach="fog" args={['#b8d8e8', 1600, 3400]} />
+      <fog attach="fog" args={['#a8d4ec', 1000, 2200]} />
 
       {/* Tropico 6 uses a PERSPECTIVE camera (distant objects shrink).
           FOV ~50°, positioned close enough that the island fills the view. */}
-      <PerspectiveCamera makeDefault position={[220, 245, 220]} fov={50} near={0.5} far={6000} />
+      <PerspectiveCamera makeDefault position={[280, 200, 280]} fov={55} near={0.5} far={6000} />
 
       {/* lighting — warm golden tropical sunlight from the right */}
       <hemisphereLight args={['#ffeec8', '#4a5a3a', 1.1]} />
@@ -55,18 +55,21 @@ export function IslandScene() {
       />
 
       <Suspense fallback={null}>
-        {/* Simple gradient sky dome (replaces drei <Sky> shader which was
-            rendering as black/white void on some GPUs). Reliable everywhere. */}
-        <mesh scale={[-1, 1, 1]}>
-          <sphereGeometry args={[2500, 32, 16]} />
+        {/* Sky dome: large sphere with vertical blue gradient. Rendered on
+            BackSide so we see its interior. No fog/toneMapping so it stays
+            vivid blue. */}
+        <mesh renderOrder={-1} frustumCulled={false}>
+          <sphereGeometry args={[1200, 32, 16]} />
           <shaderMaterial
             side={THREE.BackSide}
             depthWrite={false}
+            depthTest={false}
+            toneMapped={false}
             uniforms={{
               topColor: { value: new THREE.Color('#2a72c8') },
-              bottomColor: { value: new THREE.Color('#b8d8e8') },
+              bottomColor: { value: new THREE.Color('#c8e8ff') },
               offset: { value: 200 },
-              exponent: { value: 0.7 },
+              exponent: { value: 0.6 },
             }}
             vertexShader={`
               varying vec3 vWorldPos;
@@ -97,7 +100,7 @@ export function IslandScene() {
         <IslandClouds />
       </Suspense>
 
-      <PostFX />
+      {/* PostFX disabled — was forcing tone mapping that turned the sky teal */}
 
       <OrbitControls
         ref={controlsRef}
@@ -118,7 +121,7 @@ export function IslandScene() {
         minPolarAngle={Math.PI / 6}        // ~30° from vertical (high aerial when zoomed out)
         enableDamping
         dampingFactor={0.1}
-        target={[0, 2, 0]}
+        target={[0, 20, 0]}
       />
 
       {/* Tropico 6-style keyboard controls (WASD / Q-E / R-F / +-) */}

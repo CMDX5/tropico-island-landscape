@@ -110,8 +110,8 @@ function smoothstep(a: number, b: number, t: number): number {
  * different regions of the island.
  */
 export function biomeAt(x: number, z: number, height: number): Biome {
-  // Coastline is always white sand
-  if (height < 0.6) return 'sand'
+  // Coastline is always white sand (extended to cover the beach strip)
+  if (height < 1.5) return 'sand'
   // Central volcano takes priority
   if (volcanoMask(x, z) > 0.3 && height > 6) return 'volcano'
   // Rocky plateaus on high ground
@@ -140,7 +140,12 @@ export function biomeAt(x: number, z: number, height: number): Biome {
  */
 export function islandHeight(x: number, z: number): number {
   const d = Math.sqrt(x * x + z * z)
-  const falloff = Math.max(0, 1 - Math.pow(d / ISLAND_RADIUS, 2.3))
+  // IRREGULAR ORGANIC SHAPE: modulate the radius by angular noise so the
+  // island is not a perfect oval — has bays, peninsulas, lobes.
+  const angle = Math.atan2(z, x)
+  const radiusNoise = 0.78 + 0.22 * fbm(Math.cos(angle) * 1.5 + 10, Math.sin(angle) * 1.5 + 10, 3)
+  const effectiveRadius = ISLAND_RADIUS * radiusNoise
+  const falloff = Math.max(0, 1 - Math.pow(d / effectiveRadius, 2.3))
   const base = fbm(x * 0.045, z * 0.045, 5)
   // base relief: raised so interior stays above sea level (no blue holes)
   let h = falloff * 3.0 + (base - 0.5) * falloff * 2.0 + 0.2
@@ -174,6 +179,11 @@ export function islandHeight(x: number, z: number): number {
   // so beaches/land read as solid, never as water holes.
   if (falloff > 0.02 && h < 0.8) {
     h = 0.8
+  }
+  // BEACH: a clearly visible sandy strip near the coast (falloff 0.05-0.25)
+  // stays low and flat so sand reads as a beach around the whole island.
+  if (falloff > 0.02 && falloff < 0.22 && h < 1.4) {
+    h = 0.8 + falloff * 2.5
   }
   // STEEP COASTAL DROPOFF: outside the island disc, plunge the terrain
   // deep underwater so the ocean covers it directly (no flat sandy plateau).

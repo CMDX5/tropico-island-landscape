@@ -15,9 +15,15 @@ type BroadleafProps = {
  * blobs. (Wind sway removed for perf.)
  */
 export function BroadleafTree({ position, scale = 1, rotation = 0, variant = 0 }: BroadleafProps) {
-  // slight per-variant offsets so a forest doesn't look cloned
-  const foliageShade = variant % 2 === 0 ? '#1f8a1a' : '#238f24'
-  const foliageShade2 = variant % 3 === 0 ? '#2da028' : '#197d16'
+  // varied foliage colors per variant so the forest isn't uniform
+  const palette = [
+    ['#1f8a1a', '#2da028'],
+    ['#176a14', '#1f7a18'],
+    ['#2a9d22', '#3aa832'],
+    ['#1a7d12', '#248a1c'],
+    ['#0f6a0e', '#1a7d14'],
+  ]
+  const [foliageShade, foliageShade2] = palette[variant % palette.length]
 
   return (
     <group position={position} scale={scale} rotation={[0, rotation, 0]}>
