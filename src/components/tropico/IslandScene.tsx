@@ -89,7 +89,7 @@ export function IslandScene() {
         <Rivers />
         <Ocean />
         <Buildings />
-        <InstancedForest count={1200} />
+        <InstancedForest count={700} />
         <Vegetation palmCount={200} />
         {/* Clouds disabled for perf — re-enable on faster machines */}
       </Suspense>

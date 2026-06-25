@@ -3,7 +3,6 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { ISLAND_SIZE, islandHeight, islandColorAt } from './terrain'
-import { makeSandTexture, makeGrassTexture, makeRockTexture } from './terrainTextures'
 
 /**
  * Procedural island terrain built as a custom XZ grid.
@@ -65,69 +64,33 @@ export function IslandTerrain() {
   }, [])
 
   const material = useMemo(() => {
-    const sand = makeSandTexture()
-    const grass = makeGrassTexture()
-    const rock = makeRockTexture()
-
+    // Simplified material (no splat-mapping textures) for performance.
+    // Uses only vertex colors + a discard for below-sea-level fragments.
     const mat = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap })
     mat.onBeforeCompile = (shader) => {
-      shader.uniforms.uSand = { value: sand }
-      shader.uniforms.uGrass = { value: grass }
-      shader.uniforms.uRock = { value: rock }
-      shader.uniforms.uTexScale = { value: 0.18 }
-
       shader.vertexShader = shader.vertexShader
         .replace(
           '#include <common>',
           `#include <common>
-          varying vec3 vWorldPos;
-          varying vec3 vWorldNormal;`,
+          varying vec3 vWorldPos;`,
         )
         .replace(
           '#include <begin_vertex>',
           `#include <begin_vertex>
-          vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
-          vWorldNormal = normalize(mat3(modelMatrix) * normal);`,
+          vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`,
         )
 
       shader.fragmentShader = shader.fragmentShader
         .replace(
           '#include <common>',
           `#include <common>
-          varying vec3 vWorldPos;
-          varying vec3 vWorldNormal;
-          uniform sampler2D uSand;
-          uniform sampler2D uGrass;
-          uniform sampler2D uRock;
-          uniform float uTexScale;
-          float hash2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }`,
+          varying vec3 vWorldPos;`,
         )
         .replace(
           '#include <color_fragment>',
           `#include <color_fragment>
-          // Discard fragments well below sea level so the terrain doesn't
-          // show a yellowish square border where it meets the ocean.
-          // The ocean (at y=-0.25) covers everything below ~-0.4.
-          if (vWorldPos.y < -0.5) discard;
-          {
-            vec2 uv = vWorldPos.xz * uTexScale;
-            vec3 sandC = texture2D(uSand, uv).rgb;
-            vec3 grassC = texture2D(uGrass, uv).rgb;
-            vec3 rockC = texture2D(uRock, uv).rgb;
-            float h = vWorldPos.y;
-            float slope = vWorldNormal.y; // 1 flat, 0 vertical
-            float sandW = smoothstep(1.8, 0.2, h);
-            float rockW = smoothstep(7.5, 11.0, h);
-            float steep = smoothstep(0.78, 0.5, slope);
-            rockW = max(rockW, steep);
-            sandW *= (1.0 - steep);
-            float grassW = clamp(1.0 - sandW - rockW, 0.0, 1.0) * (1.0 - steep);
-            vec3 splat = sandC * sandW + grassC * grassW + rockC * rockW;
-            // real snow cap on the highest peaks
-            float snowW = smoothstep(8.5, 12.0, h) * (1.0 - steep * 0.6);
-            splat = mix(splat, vec3(1.0), snowW);
-            diffuseColor.rgb = mix(diffuseColor.rgb, splat, 0.55);
-          }`,
+          // Discard fragments below sea level (ocean covers them)
+          if (vWorldPos.y < -0.5) discard;`,
         )
     }
     return mat

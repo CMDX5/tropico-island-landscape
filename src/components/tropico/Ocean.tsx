@@ -82,8 +82,10 @@ export function Ocean() {
     mat.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = { value: 0 }
       shader.uniforms.uSunDir = { value: new THREE.Vector3(60, 70, -30).normalize() }
-      shader.uniforms.uShallow = { value: new THREE.Color('#00ced1') }  // bright turquoise
-      shader.uniforms.uDeep = { value: new THREE.Color('#006994') }     // deep navy blue
+      shader.uniforms.uShallow = { value: new THREE.Color('#40e0d0') }   // near shore (bright turquoise)
+      shader.uniforms.uMid = { value: new THREE.Color('#00ced1') }       // mid ocean (turquoise)
+      shader.uniforms.uFar = { value: new THREE.Color('#0077b6') }       // far ocean (deep blue-green)
+      shader.uniforms.uDeep = { value: new THREE.Color('#023e8a') }      // deep ocean (navy)
       shader.uniforms.uFoamColor = { value: new THREE.Color('#ffffff') }
       shaderRef.current = shader
 
@@ -122,6 +124,8 @@ export function Ocean() {
           uniform float uTime;
           uniform vec3 uSunDir;
           uniform vec3 uShallow;
+          uniform vec3 uMid;
+          uniform vec3 uFar;
           uniform vec3 uDeep;
           uniform vec3 uFoamColor;
           float hash2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }`,
@@ -132,21 +136,28 @@ export function Ocean() {
           // discard fragments near the coast so the water surface stays
           // well off the beach — the sand reads as rigid ground.
           if (vWaveAmp < 0.15) discard;
-          // Depth gradient: bright turquoise near shore -> deep navy offshore
-          vec3 waterCol = mix(uShallow, uDeep, vDepth);
+          // 4-zone Tropico 6 gradient: shallow -> mid -> far -> deep
+          vec3 waterCol;
+          if (vDepth < 0.33) {
+            waterCol = mix(uShallow, uMid, vDepth / 0.33);
+          } else if (vDepth < 0.66) {
+            waterCol = mix(uMid, uFar, (vDepth - 0.33) / 0.33);
+          } else {
+            waterCol = mix(uFar, uDeep, (vDepth - 0.66) / 0.34);
+          }
           // Specular sun reflection (sharp highlight)
           vec3 V = normalize(cameraPosition - vWorldPos);
           vec3 L = normalize(uSunDir);
           vec3 H = normalize(L + V);
-          float spec = pow(max(dot(vWorldNormal, H), 0.0), 200.0);
+          float spec = pow(max(dot(vWorldNormal, H), 0.0), 120.0);
           // Sun glitter: multi-sample hash for fine sparkle (no banding)
           float g1 = hash2(vWorldPos.xz * 3.7 + vec2(uTime * 0.4, -uTime * 0.3));
           float g2 = hash2(vWorldPos.xz * 9.1 + vec2(-uTime * 0.5, uTime * 0.6));
           float glitter = pow(g1 * g2, 12.0);
           // Combine: water color + specular + glitter
-          diffuseColor.rgb = waterCol + vec3(spec * 1.5) + vec3(glitter * 0.7, glitter * 0.75, glitter * 0.85);
+          diffuseColor.rgb = waterCol + vec3(spec * 2.5) + vec3(glitter * 0.8, glitter * 0.85, glitter * 0.95);
           // Coastal foam: thick white edge where ocean meets beach
-          diffuseColor.rgb = mix(diffuseColor.rgb, uFoamColor, vFoam * 0.9);`,
+          diffuseColor.rgb = mix(diffuseColor.rgb, uFoamColor, vFoam * 0.95);`,
         )
     }
     return mat
@@ -188,7 +199,7 @@ export function Ocean() {
       {/* deep water */}
       <mesh position={[0, -3.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[SIZE, SIZE]} />
-        <meshStandardMaterial color="#006994" roughness={0.4} metalness={0.1} />
+        <meshStandardMaterial color="#023e8a" roughness={0.4} metalness={0.1} />
       </mesh>
       {/* shallow animated surface */}
       <mesh ref={surfaceRef} geometry={geometry} material={material} position={[0, -0.25, 0]} receiveShadow />
