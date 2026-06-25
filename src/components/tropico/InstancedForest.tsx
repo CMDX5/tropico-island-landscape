@@ -5,14 +5,68 @@ import * as THREE from 'three'
 import { scatter } from './terrain'
 
 /**
- * Dense instanced forest of broadleaf-style tropical trees, rendered
- * with InstancedMesh (one draw call per part) so we can push the count
- * very high without tanking the frame rate.
+ * Dense instanced forest — two layers:
+ *  1. Jungle: very dense dark-green broadleaf trees packed tightly,
+ *     forming a continuous green carpet (no ground visible beneath).
+ *  2. Mountain: sparse smaller dark trees on high ground.
  *
- * Three instanced meshes (trunk + 2 canopy blobs) share the same
- * transform matrix per instance.
+ * Uses InstancedMesh (3 meshes per layer: trunk + 2 canopy blobs) so
+ * we can push 3000+ trees without performance loss.
  */
-export function InstancedForest({ count = 6000 }: { count?: number }) {
+export function InstancedForest({ count = 3000 }: { count?: number }) {
+  return (
+    <group>
+      <ForestLayer
+        count={Math.floor(count * 0.8)}
+        seed={88}
+        minH={1.0}
+        maxH={14}
+        maxSlope={1.6}
+        minScale={1.8}
+        maxScale={3.2}
+        canopyColor="#0f6a0e"
+        canopy2Color="#1a7d14"
+        trunkScale={1.2}
+      />
+      <ForestLayer
+        count={Math.floor(count * 0.2)}
+        seed={142}
+        minH={6}
+        maxH={20}
+        maxSlope={2.2}
+        minScale={1.0}
+        maxScale={1.8}
+        canopyColor="#1a5e14"
+        canopy2Color="#0f4a0e"
+        trunkScale={0.8}
+      />
+    </group>
+  )
+}
+
+function ForestLayer({
+  count,
+  seed,
+  minH,
+  maxH,
+  maxSlope,
+  minScale,
+  maxScale,
+  canopyColor,
+  canopy2Color,
+  trunkScale,
+}: {
+  count: number
+  seed: number
+  minH: number
+  maxH: number
+  maxSlope: number
+  minScale: number
+  maxScale: number
+  canopyColor: string
+  canopy2Color: string
+  trunkScale: number
+}) {
   const trunkRef = useRef<THREE.InstancedMesh>(null!)
   const canopyRef = useRef<THREE.InstancedMesh>(null!)
   const canopy2Ref = useRef<THREE.InstancedMesh>(null!)
@@ -20,14 +74,14 @@ export function InstancedForest({ count = 6000 }: { count?: number }) {
   const placements = useMemo(
     () =>
       scatter(count, {
-        minH: 1.0,
-        maxH: 16,
-        maxSlope: 1.8,
-        seed: 88,
-        minScale: 2.5,
-        maxScale: 4.5,
+        minH,
+        maxH,
+        maxSlope,
+        seed,
+        minScale,
+        maxScale,
       }),
-    [count],
+    [count, seed, minH, maxH, maxSlope, minScale, maxScale],
   )
 
   const matrices = useMemo(() => {
@@ -65,22 +119,22 @@ export function InstancedForest({ count = 6000 }: { count?: number }) {
         ref={trunkRef}
         args={[undefined as never, undefined as never, matrices.length]}
       >
-        <cylinderGeometry args={[0.18, 0.28, 3.0, 6]} />
+        <cylinderGeometry args={[0.18 * trunkScale, 0.28 * trunkScale, 3.0 * trunkScale, 6]} />
         <meshStandardMaterial color="#6e4f2c" roughness={0.95} flatShading />
       </instancedMesh>
       <instancedMesh
         ref={canopyRef}
         args={[undefined as never, undefined as never, matrices.length]}
       >
-        <icosahedronGeometry args={[1.4, 1]} />
-        <meshStandardMaterial color="#1f8a1a" roughness={0.85} flatShading />
+        <icosahedronGeometry args={[1.6, 1]} />
+        <meshStandardMaterial color={canopyColor} roughness={0.85} flatShading />
       </instancedMesh>
       <instancedMesh
         ref={canopy2Ref}
         args={[undefined as never, undefined as never, matrices.length]}
       >
-        <icosahedronGeometry args={[0.85, 1]} />
-        <meshStandardMaterial color="#2da028" roughness={0.85} flatShading />
+        <icosahedronGeometry args={[1.0, 1]} />
+        <meshStandardMaterial color={canopy2Color} roughness={0.85} flatShading />
       </instancedMesh>
     </group>
   )

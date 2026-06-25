@@ -84,20 +84,20 @@ function GrassTuft({ p }: { p: Placement }) {
 export function Vegetation({ palmCount = 500 }: { palmCount?: number }) {
   // keep trees away from the beach villages so houses stay visible
   const avoid = useMemo(() => VILLAGE_CENTERS.map(([x, z]) => ({ x, z, r: 35 })), [])
-  // palm trees on beaches and sandy lowlands (more, bigger, visible on sand)
+  // palm trees on beaches and forest edges (tall, curved — 3x building height)
   const palms = useMemo(
-    () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 1.5, maxScale: 2.5, biome: ['sand', 'plain'], avoid }),
+    () => scatter(palmCount, { minH: 0.2, maxH: 4, maxSlope: 1.2, seed: 7, minScale: 2.5, maxScale: 4.0, biome: ['sand', 'plain'], avoid }),
     [palmCount, avoid],
   )
   // second cluster of palms specifically on sand — right up to the beach edge
   const beachPalms = useMemo(
-    () => scatter(400, { minH: 0.2, maxH: 2.0, maxSlope: 1.0, seed: 42, minScale: 1.3, maxScale: 2.2, biome: 'sand', avoid }),
+    () => scatter(400, { minH: 0.2, maxH: 2.0, maxSlope: 1.0, seed: 42, minScale: 2.0, maxScale: 3.5, biome: 'sand', avoid }),
     [avoid],
   )
   // broadleaf trees now rendered via InstancedForest (IslandScene) for density
-  // bushes scattered on plains, hills, jungle AND sand (variety)
+  // bushes + shrubs: small green-yellow fillers between trees (Tropico 6 style)
   const bushes = useMemo(
-    () => scatter(500, { minH: 0.5, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.7, maxScale: 1.4, biome: ['plain', 'hill', 'jungle', 'sand'], avoid }),
+    () => scatter(800, { minH: 0.5, maxH: 8, maxSlope: 1.6, seed: 21, minScale: 0.8, maxScale: 1.6, biome: ['plain', 'hill', 'jungle', 'sand'], avoid }),
     [avoid],
   )
   // rocks scattered on beaches, slopes, mountains and plateaus
